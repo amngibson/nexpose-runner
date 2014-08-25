@@ -4,5 +4,6 @@ module CONSTANTS
   REQUIRED_PASSWORD_MESSAGE = 'OOPS! Looks like you forgot to give me a password to login to Nexpose with'
   REQUIRED_SITE_NAME_MESSAGE = 'OOPS! Looks like you forgot to give me a Nexpose Site Name'
   REQUIRED_IP_ADDRESS_MESSAGE = 'OOPS! Looks like you forgot to give me an IP Address to scan'
+  REQUIRED_SCAN_TEMPLATE_MESSAGE = 'OOPS! Looks like you forgot to give me a Scan Template to use'
   DEFAULT_PORT = '3780'
 end
