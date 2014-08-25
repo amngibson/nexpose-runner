@@ -1,22 +1,22 @@
-require 'nexpose/scan'
+require 'nexpose-runner/scan'
 
-describe 'nexpose' do
+
+describe 'nexpose-runner' do
   describe 'scan' do
     before(:each) do
-      @expected_connection = 'http://spec.connection'
-      @expected_port = '3781'
+      @expected_connection = 'http://test.connection'
       @expected_username = 'rapid7'
       @expected_password = 'password'
-      @expected_site_name = 'sitename'
-      @expected_scan_template = 'full_audit'
-      @expected_site_id = '33'
-      @expected_scan_id = '12'
-      @mock_device_ip_to_scan = '127.0.0.1'
     end
 
 
-      it 'should create a session with the nexpose server' do
+      it 'should create a session with the nexpose-runner server' do
+        expected_options = get_default_options_and_override({})
 
+        expect(NexposeRunner::Scan).to receive(:new)
+                                        .with(expected_options)
+                                        .and_return('<LoginRequest sync-id="arbitrary_integer" user-id="my-username" password="my-password"/>')
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password)
       end
 
       it 'should throw an error if no connection url is passed' do
@@ -52,5 +52,7 @@ describe 'nexpose' do
   end
 end
 
+def get_default_options_and_override(override)
+  {:host => @expected_connection,  :username => @expected_username, :password => @expected_password}
 
-
+end
