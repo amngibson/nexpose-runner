@@ -3,4 +3,4 @@
 require 'nexpose-runner/scan'
 
 $stdout.sync = true
-NexposeRunner::Scan.start ARGV[0], ARGV[1], ARGV[2]
+NexposeRunner::Scan.start ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5]
