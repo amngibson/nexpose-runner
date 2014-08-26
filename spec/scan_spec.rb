@@ -15,9 +15,24 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ip = '10.5.0.15'
       @expected_scan_template = 'full-audit-widget-corp'
+      @expected_vulnerability_query = 'SELECT DISTINCT
+                                  ip_address,
+                                  title,
+                                  date_published,
+                                  severity,
+                                  summary,
+                                  fix
+                                FROM fact_asset_scan_vulnerability_finding
+                                JOIN dim_asset USING (asset_id)
+                                JOIN dim_vulnerability USING (vulnerability_id)
+                                JOIN dim_vulnerability_solution USING (vulnerability_id)
+                                JOIN dim_solution_highest_supercedence USING (solution_id)
+                                JOIN dim_solution ds ON superceding_solution_id = ds.solution_id'
       @mock_scan_id = '12'
+      @mock_site_id = '1'
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
+      @mock_report = get_mock_report
     end
 
 
@@ -39,6 +54,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -46,6 +62,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
@@ -85,6 +114,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -92,6 +122,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -125,6 +168,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -132,6 +176,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -149,6 +206,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -156,6 +214,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -173,6 +244,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -180,6 +252,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -197,6 +282,7 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+                                      .and_return('id' => @mock_site_id)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
@@ -204,6 +290,19 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
+
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                              .with(nil, 'sql')
+                                              .and_return(@mock_report)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('version', '1.3.0')
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('query', @expected_vulnerability_query)
+
+        expect(@mock_report).to receive(:add_filter)
+                                .with('site', @mock_site_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -222,10 +321,24 @@ describe 'nexpose-runner' do
 
           expect(@mock_nexpose_site).to receive(:save)
                                         .with(@mock_nexpose_client)
+                                        .and_return('id' => @mock_site_id)
 
           expect(@mock_nexpose_site).to receive(:scan)
                                         .with(@mock_nexpose_client)
                                         .and_return({'id' => @mock_scan_id})
+
+          expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                .with(nil, 'sql')
+                                                .and_return(@mock_report)
+
+          expect(@mock_report).to receive(:add_filter)
+                                  .with('version', '1.3.0')
+
+          expect(@mock_report).to receive(:add_filter)
+                                  .with('query', @expected_vulnerability_query)
+
+          expect(@mock_report).to receive(:add_filter)
+                                  .with('site', @mock_site_id)
 
         end
   
@@ -270,17 +383,62 @@ describe 'nexpose-runner' do
         end
       end
 
-      #it 'should download an adhoc report in CSV format with all the detected vulnerabilities ' do
 
-      #end
 
-      #it 'should download an adhoc report in CSV format with all the detected installed software ' do
+      describe 'it should create reports' do
+        before(:each) do
+          expect(@mock_nexpose_client).to receive(:login)
+                                          .and_return(true)
 
-      #end
+          expect(Nexpose::Site).to receive(:new)
+                                   .with(@expected_site_name, @expected_scan_template)
+                                   .and_return(@mock_nexpose_site)
 
-      #it 'should download an adhoc report in CSV format with all the detected policy checks ' do
+          expect(@mock_nexpose_site).to receive(:add_ip)
+                                        .with(@expected_ip)
 
-      #end
+          expect(@mock_nexpose_site).to receive(:save)
+                                        .with(@mock_nexpose_client)
+                                        .and_return('id' => @mock_site_id)
+
+          expect(@mock_nexpose_site).to receive(:scan)
+                                        .with(@mock_nexpose_client)
+                                        .and_return({'id' => @mock_scan_id})
+
+          expect(@mock_nexpose_client).to receive(:scan_status)
+                                          .with(@mock_scan_id)
+
+        end
+
+        it 'should download an adhoc report in CSV format with all the detected vulnerabilities ' do
+
+          expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                .with(nil, 'sql')
+                                                .and_return(@mock_report)
+
+          expect(@mock_report).to receive(:add_filter)
+                                 .with('version', '1.3.0')
+
+          expect(@mock_report).to receive(:add_filter)
+                                  .with('query', @expected_vulnerability_query)
+
+          expect(@mock_report).to receive(:add_filter)
+                                  .with('site', @mock_site_id)
+
+
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+
+        end
+
+        #it 'should download an adhoc report in CSV format with all the detected installed software ' do
+
+        #end
+
+        #it 'should download an adhoc report in CSV format with all the detected policy checks ' do
+
+        #end
+      end
+
 
   end
 end
@@ -305,4 +463,15 @@ def get_mock_nexpose_site
                                 .and_return(mock_nexpose_site)
 
   mock_nexpose_site
+end
+
+def get_mock_report
+  mock_report = double(Nexpose::AdhocReportConfig)
+
+  allow(mock_report).to receive(:call).with(any_args).and_return({})
+
+  allow(Nexpose::AdhocReportConfig).to receive(:new)
+                          .and_return(mock_report)
+
+  mock_report
 end
