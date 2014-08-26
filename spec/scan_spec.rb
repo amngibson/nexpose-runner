@@ -12,7 +12,7 @@ describe 'nexpose-runner' do
       @expected_ip = '10.5.0.15'
       @expected_scan_template = 'full-audit-widget-corp'
       @mock_nexpose_client = get_mock_nexpose_client
-      @mock_session_id = 'ED3B7315775C3950DD53119D8E317B9D8886752C'
+      @mock_nexpose_site = get_mock_nexpose_site
     end
 
 
@@ -21,8 +21,19 @@ describe 'nexpose-runner' do
         expect(Nexpose::Connection).to receive(:new)
                                     .with(@expected_connection, @expected_username, @expected_password, @expected_port)
                                     .and_return(@mock_nexpose_client)
+
         expect(@mock_nexpose_client).to receive(:login)
                                     .and_return(true)
+
+        expect(Nexpose::Site).to receive(:new)
+                                 .with(@expected_site_name, @expected_scan_template)
+                                 .and_return(@mock_nexpose_site)
+
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                      .with(@expected_ip)
+
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
 
@@ -52,6 +63,16 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_client).to receive(:login)
                                         .and_return(true)
 
+        expect(Nexpose::Site).to receive(:new)
+                                 .with(@expected_site_name, @expected_scan_template)
+                                 .and_return(@mock_nexpose_site)
+
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                      .with(@expected_ip)
+
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
+
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
@@ -77,18 +98,50 @@ describe 'nexpose-runner' do
 
         expect(Nexpose::Site).to receive(:new)
                                        .with(@expected_site_name, @expected_scan_template)
+                                       .and_return(@mock_nexpose_site)
 
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                      .with(@expected_ip)
+
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
-      #it 'should add the supplied ip address to the newly created site' do
+      it 'should add the supplied ip address to the newly created site' do
+        expect(@mock_nexpose_client).to receive(:login)
+                                        .and_return(true)
 
-      #end
+        expect(Nexpose::Site).to receive(:new)
+                                 .with(@expected_site_name, @expected_scan_template)
+                                 .and_return(@mock_nexpose_site)
 
-      #it 'should save the new site configuration' do
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                .with(@expected_ip)
 
-      #end
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
+
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+      end
+
+      it 'should save the new site configuration' do
+        expect(@mock_nexpose_client).to receive(:login)
+                                        .and_return(true)
+
+        expect(Nexpose::Site).to receive(:new)
+                                 .with(@expected_site_name, @expected_scan_template)
+                                 .and_return(@mock_nexpose_site)
+
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                      .with(@expected_ip)
+
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
+
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+      end
 
       #it 'should initiate a new scan against the newly create site with the supplied scan template' do
 
@@ -126,4 +179,15 @@ def get_mock_nexpose_client
                              .and_return(mock_nexpose_client)
 
   mock_nexpose_client
+end
+
+def get_mock_nexpose_site
+  mock_nexpose_site = double(Nexpose::Site)
+
+  allow(mock_nexpose_site).to receive(:call).with(any_args).and_return({})
+
+  allow(Nexpose::Site).to receive(:new)
+                                .and_return(mock_nexpose_site)
+
+  mock_nexpose_site
 end

@@ -1,4 +1,4 @@
-# Nexpose::Scan
+# NexposeRunner::Scan
 
 TODO: Write a gem description
 

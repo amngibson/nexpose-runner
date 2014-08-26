@@ -17,8 +17,8 @@ module NexposeRunner
       nsc = Nexpose::Connection.new connection_url, username, password, port
       nsc.login
       site = Nexpose::Site.new site_name, scan_template
-
-
+      site.add_ip ip_address
+      site.save nsc
     end
   end
 end
