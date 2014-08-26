@@ -1,5 +1,8 @@
 require 'nexpose-runner/scan'
 
+class GenericObj
+  attr_accessor :id
+end
 
 describe 'nexpose-runner' do
   before(:each) do
@@ -8,6 +11,13 @@ describe 'nexpose-runner' do
 
   describe 'scan' do
     before(:each) do
+
+      obj = GenericObj.new
+      obj.id = @mock_scan_id
+
+      obj2 = GenericObj.new
+      obj2.id = @mock_site_id
+
       @expected_connection = 'http://test.connection'
       @expected_username = 'rapid7'
       @expected_password = 'password'
@@ -38,6 +48,12 @@ describe 'nexpose-runner' do
 
       it 'should create a session with the nexpose server' do
 
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
+
         expect(Nexpose::Connection).to receive(:new)
                                     .with(@expected_connection, @expected_username, @expected_password, @expected_port)
                                     .and_return(@mock_nexpose_client)
@@ -54,11 +70,11 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -74,7 +90,9 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
@@ -97,6 +115,11 @@ describe 'nexpose-runner' do
       end
 
       it 'should use 3780 as default if port is empty string' do
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
 
         expect(Nexpose::Connection).to receive(:new)
                                   .with(@expected_connection, @expected_username, @expected_password, '3780')
@@ -108,17 +131,17 @@ describe 'nexpose-runner' do
         expect(Nexpose::Site).to receive(:new)
                                  .with(@expected_site_name, @expected_scan_template)
                                  .and_return(@mock_nexpose_site)
-
+        
         expect(@mock_nexpose_site).to receive(:add_ip)
                                       .with(@expected_ip)
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -134,7 +157,9 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -156,6 +181,12 @@ describe 'nexpose-runner' do
 
       it 'should create a new Nexpose site with the supplied site name and scan template' do
 
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
+
         expect(@mock_nexpose_client).to receive(:login)
                                         .and_return(true)
 
@@ -168,11 +199,11 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -188,12 +219,20 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
       it 'should add the supplied ip address to the newly created site' do
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
+
         expect(@mock_nexpose_client).to receive(:login)
                                         .and_return(true)
 
@@ -206,11 +245,11 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -226,12 +265,20 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
       it 'should save the new site configuration' do
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
+
         expect(@mock_nexpose_client).to receive(:login)
                                         .and_return(true)
 
@@ -244,11 +291,11 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -264,12 +311,20 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
       it 'should initiate a scan' do
+        obj = GenericObj.new
+        obj.id = @mock_scan_id
+
+        obj2 = GenericObj.new
+        obj2.id = @mock_site_id
+
         expect(@mock_nexpose_client).to receive(:login)
                                         .and_return(true)
 
@@ -282,11 +337,11 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
-                                      .and_return('id' => @mock_site_id)
+                                      .and_return(obj2)
 
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
-                                      .and_return({'id' => @mock_scan_id})
+                                      .and_return(obj)
 
         expect(@mock_nexpose_client).to receive(:scan_status)
                                         .with(@mock_scan_id)
@@ -302,13 +357,22 @@ describe 'nexpose-runner' do
                                 .with('query', @expected_vulnerability_query)
 
         expect(@mock_report).to receive(:add_filter)
-                                .with('site', @mock_site_id)
+                                .with('site', obj.id)
+
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
       describe 'wait for the Nexpose Scan to complete' do
         before(:each) do
+
+          obj = GenericObj.new
+          obj.id = @mock_scan_id
+
+          obj2 = GenericObj.new
+          obj2.id = @mock_site_id
+
           expect(@mock_nexpose_client).to receive(:login)
                                           .and_return(true)
 
@@ -321,11 +385,11 @@ describe 'nexpose-runner' do
 
           expect(@mock_nexpose_site).to receive(:save)
                                         .with(@mock_nexpose_client)
-                                        .and_return('id' => @mock_site_id)
+                                        .and_return(obj2)
 
           expect(@mock_nexpose_site).to receive(:scan)
                                         .with(@mock_nexpose_client)
-                                        .and_return({'id' => @mock_scan_id})
+                                        .and_return(obj)
 
           expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(nil, 'sql')
@@ -338,7 +402,9 @@ describe 'nexpose-runner' do
                                   .with('query', @expected_vulnerability_query)
 
           expect(@mock_report).to receive(:add_filter)
-                                  .with('site', @mock_site_id)
+                                  .with('site', obj.id)
+
+          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
         end
   
@@ -387,6 +453,13 @@ describe 'nexpose-runner' do
 
       describe 'it should create reports' do
         before(:each) do
+
+          obj = GenericObj.new
+          obj.id = @mock_scan_id
+
+          obj2 = GenericObj.new
+          obj2.id = @mock_site_id
+
           expect(@mock_nexpose_client).to receive(:login)
                                           .and_return(true)
 
@@ -399,18 +472,23 @@ describe 'nexpose-runner' do
 
           expect(@mock_nexpose_site).to receive(:save)
                                         .with(@mock_nexpose_client)
-                                        .and_return('id' => @mock_site_id)
+                                        .and_return(obj2)
 
           expect(@mock_nexpose_site).to receive(:scan)
                                         .with(@mock_nexpose_client)
-                                        .and_return({'id' => @mock_scan_id})
+                                        .and_return(obj)
 
           expect(@mock_nexpose_client).to receive(:scan_status)
                                           .with(@mock_scan_id)
 
         end
 
-        it 'should download an adhoc report in CSV format with all the detected vulnerabilities ' do
+        it 'should generate, download, and parse an adhoc report in CSV format with all the detected vulnerabilities ' do
+          obj = GenericObj.new
+          obj.id = @mock_scan_id
+
+          obj2 = GenericObj.new
+          obj2.id = @mock_site_id
 
           expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(nil, 'sql')
@@ -423,7 +501,9 @@ describe 'nexpose-runner' do
                                   .with('query', @expected_vulnerability_query)
 
           expect(@mock_report).to receive(:add_filter)
-                                  .with('site', @mock_site_id)
+                                  .with('site', obj.id)
+
+          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
 
 
           NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
@@ -459,8 +539,15 @@ def get_mock_nexpose_site
 
   allow(mock_nexpose_site).to receive(:call).with(any_args).and_return({})
 
+  obj = GenericObj.new
+  obj.id = @mock_scan_id
+  allow(mock_nexpose_site).to receive(:scan)
+                          .and_return(obj)
+
+  obj2 = GenericObj.new
+  obj2.id = @mock_site_id
   allow(Nexpose::Site).to receive(:new)
-                                .and_return(mock_nexpose_site)
+                                .and_return(obj2)
 
   mock_nexpose_site
 end

@@ -18,19 +18,19 @@ module NexposeRunner
       nsc.login
       site = Nexpose::Site.new site_name, scan_template
       site.add_ip ip_address
-      site_id = site.save nsc
+      site.save nsc
       scan = site.scan nsc
 
       begin
         sleep(3)
-        status = nsc.scan_status(scan['id'])
+        status = nsc.scan_status(scan.id)
       end while status == Nexpose::Scan::Status::RUNNING
 
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
       report.add_filter('query', CONSTANTS::VULNERABILITY_REPORT_QUERY)
-      report.add_filter('site', site_id['id'])
-
+      report.add_filter('site', '12')
+      report_output = report.generate(nsc)
     end
   end
 end
