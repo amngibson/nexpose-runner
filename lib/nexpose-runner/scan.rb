@@ -29,7 +29,7 @@ module NexposeRunner
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
       report.add_filter('query', CONSTANTS::VULNERABILITY_REPORT_QUERY)
-      report.add_filter('site', '12')
+      report.add_filter('site', site.id)
       report_output = report.generate(nsc)
     end
   end
