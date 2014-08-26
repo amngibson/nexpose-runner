@@ -1,5 +1,6 @@
 require 'nexpose-runner/constants'
 require 'nexpose'
+require 'csv'
 
 module NexposeRunner
   module Scan
@@ -31,6 +32,7 @@ module NexposeRunner
       report.add_filter('query', CONSTANTS::VULNERABILITY_REPORT_QUERY)
       report.add_filter('site', site.id)
       report_output = report.generate(nsc)
+      csv_output = CSV.parse(report_output.chomp, {:headers => :first_row})
     end
   end
 end

@@ -36,6 +36,17 @@ describe 'nexpose-runner' do
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
       @mock_report = get_mock_report
+      @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
+                            172.31.32.180,Database Open Access,2010-01-01,Severe,Restrict database access,"
+                            <p>
+                            <p>
+                            Configure the database server to only allow access to trusted systems.
+                            For example, the PCI DSS standard requires you to place the database in an
+                            internal network zone, segregated from the DMZ
+                            </p></p>"
+                            172.31.32.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,"
+                            <p>Download and apply the upgrade from:
+                            <a href=""http://dev.mysql.com/downloads/mysql"">http://dev.mysql.com/downloads/mysql</a></p>'
     end
 
       it 'should create a session with the nexpose server' do
@@ -80,7 +91,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
@@ -143,7 +156,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -201,7 +216,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -243,7 +260,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -285,7 +304,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -327,7 +348,9 @@ describe 'nexpose-runner' do
         expect(@mock_report).to receive(:add_filter)
                                 .with('site', @mock_site_id)
 
-        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+        expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+        expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -368,7 +391,9 @@ describe 'nexpose-runner' do
           expect(@mock_report).to receive(:add_filter)
                                   .with('site', @mock_site_id)
 
-          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+          expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
         end
   
@@ -457,7 +482,9 @@ describe 'nexpose-runner' do
           expect(@mock_report).to receive(:add_filter)
                                   .with('site', @mock_site_id)
 
-          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client)
+          expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
+
+          expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
 
 
           NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
