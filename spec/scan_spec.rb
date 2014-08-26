@@ -2,6 +2,10 @@ require 'nexpose-runner/scan'
 
 
 describe 'nexpose-runner' do
+  before(:each) do
+    allow(NexposeRunner::Scan).to receive(:sleep)
+  end
+
   describe 'scan' do
     before(:each) do
       @expected_connection = 'http://test.connection'
@@ -11,6 +15,7 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ip = '10.5.0.15'
       @expected_scan_template = 'full-audit-widget-corp'
+      @mock_scan_id = '12'
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
     end
@@ -34,6 +39,14 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
+
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
+
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
 
@@ -73,6 +86,13 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
 
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
+
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
+
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
@@ -106,6 +126,13 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
 
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
+
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
+
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
@@ -122,6 +149,13 @@ describe 'nexpose-runner' do
 
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
+
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
+
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
 
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
@@ -140,20 +174,101 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
 
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
+
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
+
         NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
       end
 
-      #it 'should initiate a new scan against the newly create site with the supplied scan template' do
+      it 'should initiate a scan' do
+        expect(@mock_nexpose_client).to receive(:login)
+                                        .and_return(true)
 
-      #end
+        expect(Nexpose::Site).to receive(:new)
+                                 .with(@expected_site_name, @expected_scan_template)
+                                 .and_return(@mock_nexpose_site)
 
-      #it 'should use the \"full-audit\" as the default scan template if no scan template is passed' do
+        expect(@mock_nexpose_site).to receive(:add_ip)
+                                      .with(@expected_ip)
 
-      #end
+        expect(@mock_nexpose_site).to receive(:save)
+                                      .with(@mock_nexpose_client)
 
-      #it 'should check and output the status of the scan every 3 seconds until its complete' do
+        expect(@mock_nexpose_site).to receive(:scan)
+                                      .with(@mock_nexpose_client)
+                                      .and_return({'id' => @mock_scan_id})
 
-      #end
+        expect(@mock_nexpose_client).to receive(:scan_status)
+                                        .with(@mock_scan_id)
+
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+      end
+
+      describe 'wait for the Nexpose Scan to complete' do
+        before(:each) do
+          expect(@mock_nexpose_client).to receive(:login)
+                                          .and_return(true)
+
+          expect(Nexpose::Site).to receive(:new)
+                                   .with(@expected_site_name, @expected_scan_template)
+                                   .and_return(@mock_nexpose_site)
+
+          expect(@mock_nexpose_site).to receive(:add_ip)
+                                        .with(@expected_ip)
+
+          expect(@mock_nexpose_site).to receive(:save)
+                                        .with(@mock_nexpose_client)
+
+          expect(@mock_nexpose_site).to receive(:scan)
+                                        .with(@mock_nexpose_client)
+                                        .and_return({'id' => @mock_scan_id})
+
+        end
+  
+        it 'should call to check the status of the scan' do
+          expect(@mock_nexpose_client).to receive(:scan_status).with(@mock_scan_id)
+  
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        end
+  
+        it 'should call to check the status until it is not running' do
+          expect(@mock_nexpose_client).to receive(:scan_status)
+                                      .with(@mock_scan_id)
+                                      .and_return(Nexpose::Scan::Status::RUNNING)
+                                      .exactly(3).times
+                                      .ordered
+  
+          expect(@mock_nexpose_client).to receive(:scan_status)
+                                      .with(@mock_scan_id)
+                                      .and_return(Nexpose::Scan::Status::FINISHED)
+                                      .once
+                                      .ordered
+  
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        end
+  
+        it 'should sleep for 3 seconds if the status is still running' do
+          expect(@mock_nexpose_client).to receive(:scan_status)
+                                      .with(@mock_scan_id)
+                                      .and_return(Nexpose::Scan::Status::RUNNING)
+                                      .exactly(3).times
+                                      .ordered
+  
+          expect(@mock_nexpose_client).to receive(:scan_status)
+                                      .with(@mock_scan_id)
+                                      .and_return(Nexpose::Scan::Status::FINISHED)
+                                      .once
+                                      .ordered
+
+          expect(NexposeRunner::Scan).to receive(:sleep).with(3).exactly(4).times
+  
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        end
+      end
 
       #it 'should download an adhoc report in CSV format with all the detected vulnerabilities ' do
 

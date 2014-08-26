@@ -19,6 +19,13 @@ module NexposeRunner
       site = Nexpose::Site.new site_name, scan_template
       site.add_ip ip_address
       site.save nsc
+      scan = site.scan nsc
+
+      begin
+        sleep(3)
+        status = nsc.scan_status(scan['id'])
+      end while status == Nexpose::Scan::Status::RUNNING
+
     end
   end
 end
