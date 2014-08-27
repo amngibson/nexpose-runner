@@ -13,7 +13,7 @@ module NexposeRunner
 
       nsc = get_new_nexpose_connection(run_details)
 
-      site = create_site(ip_address, nsc, scan_template, site_name)
+      site = create_site(run_details, nsc)
 
       start_scan(nsc, site)
 
@@ -36,9 +36,9 @@ module NexposeRunner
       end while status == Nexpose::Scan::Status::RUNNING
     end
 
-    def self.create_site(ip_address, nsc, scan_template, site_name)
-      site = Nexpose::Site.new site_name, scan_template
-      site.add_ip ip_address
+    def self.create_site(run_details, nsc)
+      site = Nexpose::Site.new run_details.site_name, run_details.scan_template
+      site.add_ip run_details.ip_address
       site.save nsc
       site
     end
