@@ -5,7 +5,7 @@ require 'csv'
 module NexposeRunner
   module Scan
     def Scan.start(connection_url, username, password, port, site_name, ip_address, scan_template)
-
+      pass = true
       raise StandardError, CONSTANTS::REQUIRED_CONNECTION_URL_MESSAGE if connection_url.nil? || connection_url.empty?
       raise StandardError, CONSTANTS::REQUIRED_USERNAME_MESSAGE if username.nil? || username.empty?
       raise StandardError, CONSTANTS::REQUIRED_PASSWORD_MESSAGE if password.nil? || password.empty?
@@ -27,12 +27,22 @@ module NexposeRunner
         status = nsc.scan_status(scan.id)
       end while status == Nexpose::Scan::Status::RUNNING
 
+
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
       report.add_filter('query', CONSTANTS::VULNERABILITY_REPORT_QUERY)
       report.add_filter('site', site.id)
       report_output = report.generate(nsc)
       csv_output = CSV.parse(report_output.chomp, {:headers => :first_row})
+      CSV.open(CONSTANTS::VULNERABILITY_REPORT_NAME, 'w') do |csv_file|
+        csv_file << csv_output.headers
+        csv_output.each do |row|
+          csv_file << row
+        end
+      end
+
+
     end
   end
 end
+
