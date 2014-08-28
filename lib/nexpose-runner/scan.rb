@@ -17,14 +17,26 @@ module NexposeRunner
 
       start_scan(nsc, site)
 
-      generate_reports(nsc, site)
+      reports = generate_reports(nsc, site)
 
+      verify_run(reports[0])
     end
 
     def self.generate_reports(nsc, site)
-      generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, CONSTANTS::VULNERABILITY_REPORT_NAME, site.id, nsc)
-      generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, CONSTANTS::SOFTWARE_REPORT_NAME, site.id, nsc)
-      generate_report(CONSTANTS::POLICY_REPORT_QUERY, CONSTANTS::POLICY_REPORT_NAME, site.id, nsc)
+      vulnerbilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
+      generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+
+      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
+      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME)
+
+      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc)
+      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
+
+      [vulnerbilities, software, policies]
+    end
+
+    def self.verify_run(vulnerabilities)
+      raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE if vulnerabilities.count > 0
     end
 
     def self.start_scan(nsc, site)
@@ -49,19 +61,20 @@ module NexposeRunner
       nsc
     end
 
-    def self.generate_report(sql, name, site, nsc)
-
+    def self.generate_report(sql, site, nsc)
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
       report.add_filter('query', sql)
       report.add_filter('site', site)
       report_output = report.generate(nsc)
-      csv_output = CSV.parse(report_output.chomp, {:headers => :first_row})
+      CSV.parse(report_output.chomp, {:headers => :first_row})
+    end
+
+    def self.generate_csv(csv_output, name)
       CSV.open(name, 'w') do |csv_file|
         csv_file << csv_output.headers
         csv_output.each do |row|
           csv_file << row
-
         end
       end
     end

@@ -5,6 +5,7 @@ module CONSTANTS
   REQUIRED_SITE_NAME_MESSAGE = 'OOPS! Looks like you forgot to give me a Nexpose Site Name'
   REQUIRED_IP_ADDRESS_MESSAGE = 'OOPS! Looks like you forgot to give me an IP Address to scan'
   REQUIRED_SCAN_TEMPLATE_MESSAGE = 'OOPS! Looks like you forgot to give me a Scan Template to use'
+  VULNERABILITY_FOUND_MESSAGE = '---------All YOUR BASE ARE BELONG TO US---------------\nVulnerabilities were found, breaking build'
   DEFAULT_PORT = '3780'
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
