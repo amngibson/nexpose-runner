@@ -12,7 +12,7 @@ At the end of the scan it will generate 3 csv reports and save them in the direc
 
 Add this line to your application's Gemfile:
 
-    gem 'nexpose-runner'
+    gem 'NexposeRunner'
 
 And then execute:
 
@@ -20,7 +20,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install nexpose-runner
+    $ gem install NexposeRunner
 
 ## Usage
 
