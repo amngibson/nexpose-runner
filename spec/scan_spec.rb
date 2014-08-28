@@ -37,20 +37,18 @@ describe 'nexpose-runner' do
                               my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,attr,2.4.44-7.el6
                               my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,audit,2.2-4.el6_5
                               my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,audit-libs,2.2-4.el6_5
-                              my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,authconfig,6.1.12-13.el6'
+                              my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,authconfig,6.1.12-13.el6'.chomp
 
       @mock_policy_report = 'compliance,title,description,ip_address,title,benchmark_name,category,scope,proof
                             false,Create Separate Partition for /tmp,The /tmp directory is a world-writable directory used for temporary storage by all users and some applications.,10.0.39.104,CIS CentOS 6 CentOS Level 1,centos_6_benchmark,Custom Policies,Custom,"Based on the following 2 results: * Based on the following 1 results: * * At least one specified RPM Package Information entry must match the given criteria. At least one evaluation must pass.<Table TableTitle=""""><tr RowTitle="""">centos-releasePASS * * At least one specified Text File Content entry must match the given criteria. At least one evaluation must pass.<Table TableTitle=""""><tr RowTitle=""Path:/etc/fstab	Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$"">/etc/fstab<Table TableTitle=""""><tr RowTitle="""">Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$<td width=""40"">FAIL<Table TableTitle=""""><tr RowTitle="""">Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$<td width=""40"">FAIL<Table TableTitle=""""><tr RowTitle="""">Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$<td width=""40"">FAIL<Table TableTitle=""""><tr RowTitle="""">Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$<td width=""40"">FAIL<Table TableTitle=""""><tr RowTitle="""">Pattern:^[\s]*[\S][\s]([\S])[\s][\S][\s][\S][\s][\S][\s][\S]$<td width=""40"">FAIL"
                             false,Set nodev option for /tmp Partition,The nodev mount option specifies that the filesystem cannot contain special devices.,10.0.39.104,CIS CentOS 6 CentOS Level 1,centos_6_benchmark,Custom Policies,Custom,"Based on the following 2 results: * Based on the following 1 results: * * At least one specified RPM Package Information entry must match the given criteria. At least one evaluation must pass.<Table TableTitle=""""><tr RowTitle="""">centos-releasePASS * * At least one specified Text File Content entry must match the given criteria. At least one evaluation must pass.<Table TableTitle=""""><tr RowTitle="""">The specified Text File Content entry was not found based on given criteria."
-                            '
+                            '.chomp
 
 
       @mock_scan = get_mock_scan
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
       @mock_report = get_mock_report
-      @mock_report_vuln = get_mock_report
-      @mock_report_software = get_mock_report
     end
 
       it 'should create a session with the nexpose server' do
@@ -174,93 +172,37 @@ describe 'nexpose-runner' do
         end
       end
 
-      describe 'it should create reports' do
-        it 'should generate, download, and parse an adhoc report in CSV format with all the detected vulnerabilities ' do
-          expect(Nexpose::AdhocReportConfig).to receive(:new)
+    describe 'it should create reports' do
+      it 'should generate, download, and parse an adhoc reports for Vulnerability, Software, and Policies' do
+        expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(nil, 'sql')
-                                                .and_return(@mock_report_vuln)
+                                                .and_return(@mock_report)
 
-          expect(@mock_report_vuln).to receive(:add_filter)
-                                 .with('version', '1.3.0')
-
-          expect(@mock_report_vuln).to receive(:add_filter)
-                                  .with('query', CONSTANTS::VULNERABILITY_REPORT_QUERY)
-
-          expect(@mock_report_vuln).to receive(:add_filter)
-                                  .with('site', @mock_site_id)
-
-          expect(@mock_report_vuln).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_vuln_report)
-
-          expect(CSV).to receive(:parse).with(@mock_vuln_report.chomp, {:headers => :first_row})
-
-          expect(CSV).to receive(:open).with(CONSTANTS::VULNERABILITY_REPORT_NAME, 'w')
+          expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+          expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report)
+          expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report)
 
           NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
-        end
-
-
-        # it 'should generate, download, and parse an adhoc report in CSV format with all the detected software ' do
-        #
-        #   expect(Nexpose::AdhocReportConfig).to receive(:new)
-        #                                         .with(nil, 'sql')
-        #                                         .and_return(@mock_report_software).
-        #
-        #   expect(@mock_report_software).to receive(:add_filter)
-        #                                    .with('version', '1.3.0')
-        #
-        #   expect(@mock_report_software).to receive(:add_filter)
-        #                                    .with('query', @expected_software_query)
-        #
-        #   expect(@mock_report_software).to receive(:add_filter)
-        #                                    .with('site', @mock_site_id)
-        #
-        #   expect(@mock_report_software).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_software_report)
-        #
-        #   expect(CSV).to receive(:parse).with(@mock_software_report.chomp, {:headers => :first_row})
-        #
-        #   expect(CSV).to receive(:open).with(@mock_software_report_name, 'w')
-        #
-        #
-        #   NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
-        #
-        # end
-        #
-        # it 'should generate, download, and parse an adhoc report in CSV format with all the detected policies ' do
-        #
-        #   expect(Nexpose::AdhocReportConfig).to receive(:new)
-        #                                         .with(nil, 'sql')
-        #                                         .and_return(@mock_report)
-        #
-        #   expect(@mock_report).to receive(:add_filter)
-        #                           .with('version', '1.3.0')
-        #
-        #   expect(@mock_report).to receive(:add_filter)
-        #                           .with('query', @expected_policy_query)
-        #
-        #   expect(@mock_report).to receive(:add_filter)
-        #                           .with('site', @mock_site_id)
-        #
-        #   expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(@mock_policy_report)
-        #
-        #   expect(CSV).to receive(:parse).with(@mock_policy_report.chomp, {:headers => :first_row})
-        #
-        #   expect(CSV).to receive(:open).with(@mock_policy_report_name, 'w')
-        #
-        #
-        #   NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
-
-        #end
-
-        #it 'should download an adhoc report in CSV format with all the detected installed software ' do
-
-        #end
-
-        #it 'should download an adhoc report in CSV format with all the detected policy checks ' do
-
-        #end
       end
-
+    end
   end
+end
+
+def expect_report_to_be_called_with(report_name, report_query, report_response)
+  expect(@mock_report).to receive(:add_filter)
+                          .with('version', '1.3.0')
+
+  expect(@mock_report).to receive(:add_filter)
+                          .with('query', report_query).ordered
+
+  expect(@mock_report).to receive(:add_filter)
+                          .with('site', @mock_site_id)
+
+  expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(report_response).ordered
+
+  expect(CSV).to receive(:parse).with(report_response.chomp, {:headers => :first_row})
+
+  expect(CSV).to receive(:open).with(report_name, 'w').ordered
 end
 
 def get_mock_nexpose_client

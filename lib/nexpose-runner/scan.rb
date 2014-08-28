@@ -23,8 +23,8 @@ module NexposeRunner
 
     def self.generate_reports(nsc, site)
       generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, CONSTANTS::VULNERABILITY_REPORT_NAME, site.id, nsc)
-      #generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, CONSTANTS::SOFTWARE_REPORT_NAME, site.id, nsc)
-      #generate_report(CONSTANTS::POLICY_REPORT_QUERY, CONSTANTS::POLICY_REPORT_NAME, site.id, nsc)
+      generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, CONSTANTS::SOFTWARE_REPORT_NAME, site.id, nsc)
+      generate_report(CONSTANTS::POLICY_REPORT_QUERY, CONSTANTS::POLICY_REPORT_NAME, site.id, nsc)
     end
 
     def self.start_scan(nsc, site)
