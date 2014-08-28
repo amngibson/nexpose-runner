@@ -4,3 +4,11 @@ rvm:
 - 1.9.3
 - jruby-19mode
 - rbx-2
+deploy:
+  provider: rubygems
+  api_key:
+    secure: TPDSN4fEjEmyZdNz9kEtzTxqR45q3IZPjj5Zw/2TEoYjQEAor/reMvc0x5Zz2OWFLUTw5P7cF7SHepNR2KNFJ0JLs4XYUPRdxryTziDktQ8Q6WDuq892fhuo9cLRAevL8KyAUlvyZiYRqfw6JefvxGXZoGfwCMlXerNX7sh/qig=
+  gem: nexpose-runner
+  on:
+    tags: true
+    repo: amngibson/nexpose-runner

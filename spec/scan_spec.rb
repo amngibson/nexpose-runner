@@ -165,7 +165,7 @@ describe 'nexpose-runner' do
         end
       end
 
-    describe 'it should create reports' do
+      describe 'it should create reports' do
       it 'should generate, download, and parse an adhoc reports for Vulnerability, Software, and Policies' do
         expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(nil, 'sql')
@@ -179,7 +179,7 @@ describe 'nexpose-runner' do
       end
     end
 
-    it 'should throw exception if vulnerability exists' do
+      it 'should throw exception if vulnerability exists' do
       expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
 
       expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)

@@ -1,6 +1,12 @@
 # NexposeRunner::Scan
 
-TODO: Write a gem description
+This is a ruby gem that basically wraps the nexpose-client gem. It was primarily created to automate scanning and reporting of dynamic hosts. 
+
+This gem will make a nexpose server connection, create a new site, initiate a scan against the assets in the site, and generate a vulnerability report, software report, and policy compliance report. 
+
+Basically this gem allows you to attach Nexpose to your Continuous Delivery/Continuous Integration pipeline. Though it can be used for other purposes.
+
+At the end of the scan it will generate 3 csv reports and save them in the directory where the script was executed from. It will also raise an exception if a vulnerbaility is detected. This is used to break the Continuous Delivery/Continuous integration build.
 
 ## Installation
 
@@ -18,7 +24,14 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+This gem allows you to specify the Nexpose Server URL, Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, and a Scan Template.
+
+
+    $ scan "connection_url" "username" "password" "port" "site_name" "ip_address" "scan_template"
+    
+EXAMPLE:
+
+    $ scan "http://test.connection" "rapid7" "password" "3780" "my_cool_software_build-28" "10.5.0.15" "full-audit-widget-corp"
 
 ## Contributing
 

@@ -15,20 +15,23 @@ module NexposeRunner
 
       site = create_site(run_details, nsc)
 
-      start_scan(nsc, site)
+      start_scan(nsc, site, run_details)
 
-      reports = generate_reports(nsc, site)
+      reports = generate_reports(nsc, site, run_details)
 
       verify_run(reports[0])
     end
 
-    def self.generate_reports(nsc, site)
+    def self.generate_reports(nsc, site, run_details)
+      puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
       vulnerbilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
       generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
 
+      puts "Scan complete for #{run_details.site_name}, Generating Software Report"
       software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
       generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME)
 
+      puts "Scan complete for #{run_details.site_name}, Generating Policy Report"
       policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc)
       generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
 
@@ -39,25 +42,31 @@ module NexposeRunner
       raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE if vulnerabilities.count > 0
     end
 
-    def self.start_scan(nsc, site)
+    def self.start_scan(nsc, site, run_details)
+
+      puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template} scan template"
       scan = site.scan nsc
 
       begin
         sleep(3)
         status = nsc.scan_status(scan.id)
+        puts "Current #{run_details.site_name} scan status: #{status.to_s}"
       end while status == Nexpose::Scan::Status::RUNNING
     end
 
     def self.create_site(run_details, nsc)
+      puts "Creating a nexpose site named #{run_details.site_name}"
       site = Nexpose::Site.new run_details.site_name, run_details.scan_template
       site.add_ip run_details.ip_address
       site.save nsc
+      puts "Created site #{run_details.site_name} successfully with the following host #{run_details.ip_address}"
       site
     end
 
     def self.get_new_nexpose_connection(run_details)
       nsc = Nexpose::Connection.new run_details.connection_url, run_details.username, run_details.password, run_details.port
       nsc.login
+      puts 'Successfully logged into the Nexpose Server'
       nsc
     end
 
