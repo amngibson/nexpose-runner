@@ -20,8 +20,8 @@ describe 'nexpose-runner' do
 
       @mock_no_vuln_report = 'ip_address,title,date_published,severity,summary,fix'
       @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
-                            172.31.32.180,Database Open Access,2010-01-01,Severe,Restrict database access,<p><p>Configure the database server to only allow access to trusted systems. For example, the PCI DSS standard requires you to place the database in an internal network zone, segregated from the DMZ </p></p>
-                            172.31.32.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,<p>Download and apply the upgrade from: <a href=http://dev.mysql.com/downloads/mysql>http://dev.mysql.com/downloads/mysql</a></p>'.chomp
+                            10.5.0.15,Database Open Access,2010-01-01,Severe,Restrict database access,<p><p>Configure the database server to only allow access to trusted systems. For example, the PCI DSS standard requires you to place the database in an internal network zone, segregated from the DMZ </p></p>
+                            10.5.0.15.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,<p>Download and apply the upgrade from: <a href=http://dev.mysql.com/downloads/mysql>http://dev.mysql.com/downloads/mysql</a></p>'.chomp
 
       @mock_software_report = 'name,ip_address,host_name,description,description,vendor,name,version
                               my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,MAKEDEV,3.24-6.el6
