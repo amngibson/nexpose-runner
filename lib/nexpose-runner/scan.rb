@@ -39,7 +39,9 @@ module NexposeRunner
     end
 
     def self.verify_run(vulnerabilities)
+
       raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE if vulnerabilities.count > 0
+
     end
 
     def self.start_scan(nsc, site, run_details)
@@ -84,6 +86,15 @@ module NexposeRunner
         csv_file << csv_output.headers
         csv_output.each do |row|
           csv_file << row
+          if name == CONSTANTS::VULNERABILITY_REPORT_NAME
+            puts '--------------------------------------'
+            puts "IP: #{row[0]}"
+            puts "Vulnerability: #{row[1]}"
+            puts "Date Vulnerability was Published: #{row[2]}"
+            puts "Severity: #{row[3]}"
+            puts "Summary: #{row[4]}"
+            puts '--------------------------------------'
+          end
         end
       end
     end
