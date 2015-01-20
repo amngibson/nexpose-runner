@@ -6,9 +6,9 @@ require 'nexpose-runner/scan_run_description'
 
 module NexposeRunner
   module Scan
-    def Scan.start(connection_url, username, password, port, site_name, ip_address, scan_template)
+    def Scan.start(connection_url, username, password, port, site_name, ip_addresses, scan_template)
 
-      run_details = ScanRunDescription.new connection_url, username, password, port, site_name, ip_address, scan_template
+      run_details = ScanRunDescription.new connection_url, username, password, port, site_name, ip_addresses, scan_template
       run_details.verify
 
       nsc = get_new_nexpose_connection(run_details)
@@ -59,9 +59,11 @@ module NexposeRunner
     def self.create_site(run_details, nsc)
       puts "Creating a nexpose site named #{run_details.site_name}"
       site = Nexpose::Site.new run_details.site_name, run_details.scan_template
-      site.add_ip run_details.ip_address
+      run_details.ip_addresses.each { |address|
+          site.add_ip address
+      }
       site.save nsc
-      puts "Created site #{run_details.site_name} successfully with the following host #{run_details.ip_address}"
+      puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
       site
     end
 
