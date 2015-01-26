@@ -13,7 +13,7 @@ describe 'nexpose-runner' do
       @expected_password = 'password'
       @expected_port = '3781'
       @expected_site_name = 'my_cool_software_build-28'
-      @expected_ip = '10.5.0.15'
+      @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
       @expected_scan_template = 'full-audit-widget-corp'
       @mock_scan_id = '12'
       @mock_site_id = '1'
@@ -52,37 +52,36 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_client).to receive(:login)
                                     .and_return(true)
 
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       it 'should throw an error if no connection url is passed' do
-        expect { NexposeRunner::Scan.start('', @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server')
-        expect { NexposeRunner::Scan.start(nil, @expected_port, @expected_username, @expected_password, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server')
+        expect { NexposeRunner::Scan.start('', @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server')
+        expect { NexposeRunner::Scan.start(nil, @expected_port, @expected_username, @expected_password, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server')
       end
 
       it 'should throw an error if no username is passed' do
-        expect { NexposeRunner::Scan.start(@expected_connection, '', @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a username to login to Nexpose with')
-        expect { NexposeRunner::Scan.start(@expected_connection, nil, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a username to login to Nexpose with')
+        expect { NexposeRunner::Scan.start(@expected_connection, '', @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a username to login to Nexpose with')
+        expect { NexposeRunner::Scan.start(@expected_connection, nil, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a username to login to Nexpose with')
       end
 
       it 'should throw an error if no password is passed' do
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, '', @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a password to login to Nexpose with')
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, nil, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a password to login to Nexpose with')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, '', @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a password to login to Nexpose with')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, nil, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a password to login to Nexpose with')
       end
 
       it 'should throw an error if no site name is passed' do
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, '', @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Nexpose Site Name')
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, nil, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Nexpose Site Name')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, '', @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Nexpose Site Name')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, nil, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Nexpose Site Name')
       end
 
       it 'should throw an error if no ip address is passed' do
         expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, '', @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me an IP Address to scan')
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, nil, @expected_scan_template) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me an IP Address to scan')
       end
 
       it 'should throw an error if no scan template is passed' do
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, '') }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
-        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, nil) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, '') }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
+        expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, nil) }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
       end
 
       it 'should use 3780 as default if port is empty string' do
@@ -90,7 +89,7 @@ describe 'nexpose-runner' do
                                        .with(@expected_connection, @expected_username, @expected_password, '3780')
                                        .and_return(@mock_nexpose_client)
 
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ip, @expected_scan_template)
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, '', @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       it 'should create a new Nexpose site with the supplied site name and scan template' do
@@ -98,21 +97,21 @@ describe 'nexpose-runner' do
                                        .with(@expected_site_name, @expected_scan_template)
                                        .and_return(@mock_nexpose_site)
 
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       it 'should add the supplied ip address to the newly created site' do
-        expect(@mock_nexpose_site).to receive(:add_ip)
-                                .with(@expected_ip)
-
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        @expected_ips.split(',').each { |ip|
+          expect(@mock_nexpose_site).to receive(:add_ip).with(ip)
+        }
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       it 'should save the new site configuration' do
         expect(@mock_nexpose_site).to receive(:save)
                                       .with(@mock_nexpose_client)
 
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       it 'should initiate a scan' do
@@ -120,14 +119,14 @@ describe 'nexpose-runner' do
                                       .with(@mock_nexpose_client)
                                       .and_return(@mock_scan)
 
-        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+        NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
       end
 
       describe 'wait for the Nexpose Scan to complete' do
         it 'should call to check the status of the scan' do
           expect(@mock_nexpose_client).to receive(:scan_status).with(@mock_scan_id)
   
-          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
         end
   
         it 'should call to check the status until it is not running' do
@@ -143,7 +142,7 @@ describe 'nexpose-runner' do
                                       .once
                                       .ordered
   
-          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
         end
   
         it 'should sleep for 3 seconds if the status is still running' do
@@ -161,7 +160,7 @@ describe 'nexpose-runner' do
 
           expect(NexposeRunner::Scan).to receive(:sleep).with(3).exactly(4).times
   
-          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template)
+          NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template)
         end
       end
 
@@ -175,14 +174,14 @@ describe 'nexpose-runner' do
           expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report)
           expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report)
 
-          expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
+          expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
       end
     end
 
       it 'should throw exception if vulnerability exists' do
       expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
 
-      expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ip, @expected_scan_template) }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
+      expect { NexposeRunner::Scan.start(@expected_connection, @expected_username, @expected_password, @expected_port, @expected_site_name, @expected_ips, @expected_scan_template) }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
     end
   end
 end
@@ -230,9 +229,9 @@ def get_mock_nexpose_site
   allow(mock_nexpose_site).to receive(:id)
                           .and_return(@mock_site_id)
 
-
-  allow(mock_nexpose_site).to receive(:add_ip)
-                                .with(@expected_ip)
+  @expected_ips.split(',').each { |ip|
+    allow(mock_nexpose_site).to receive(:add_ip).with(ip)
+  }
 
   allow(mock_nexpose_site).to receive(:save)
                                 .with(@mock_nexpose_client)
