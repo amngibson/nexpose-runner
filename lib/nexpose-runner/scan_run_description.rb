@@ -3,14 +3,14 @@ class ScanRunDescription
   @@port_value = ''
   @@ip_addresses = ''
 
-  def initialize(connection_url, username, password, port, site_name, ip_addresses, scan_template)
-    self.connection_url = connection_url
-    self.username = username
-    self.password = password
-    @@port_value = port
-    self.site_name = site_name
-    self.ip_addresses = ip_addresses
-    self.scan_template = scan_template
+  def initialize(options)
+    self.connection_url = options['connection_url']
+    self.username =  options['username']
+    self.password = options['password']
+    @@port_value = options['port']
+    self.site_name = options['site_name']
+    self.ip_addresses = options['ip_addresses']
+    self.scan_template = options['scan_template']
   end
 
   def verify

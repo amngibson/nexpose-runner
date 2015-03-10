@@ -6,9 +6,9 @@ require 'nexpose-runner/scan_run_description'
 
 module NexposeRunner
   module Scan
-    def Scan.start(connection_url, username, password, port, site_name, ip_addresses, scan_template)
+    def Scan.start(options)
 
-      run_details = ScanRunDescription.new connection_url, username, password, port, site_name, ip_addresses, scan_template
+      run_details = ScanRunDescription.new(options)
       run_details.verify
 
       nsc = get_new_nexpose_connection(run_details)
