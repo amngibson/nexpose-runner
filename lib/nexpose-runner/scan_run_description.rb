@@ -1,3 +1,5 @@
+require 'yaml'
+
 class ScanRunDescription
   attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template
   @@port_value = ''
