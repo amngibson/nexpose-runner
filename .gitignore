@@ -21,3 +21,5 @@ tmp
 *.a
 mkmf.log
 .idea/
+config/scan.yml
+config/scan.yml.bak

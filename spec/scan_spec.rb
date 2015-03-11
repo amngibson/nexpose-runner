@@ -2,6 +2,11 @@ require 'nexpose-runner/scan'
 require 'nexpose-runner/constants'
 
 describe 'nexpose-runner' do
+
+  if File.file?('config/exploit.yml')
+    File.rename('config/exploit.yml', 'config/exploit.yml.bak')
+  end
+
   before(:each) do
     allow(NexposeRunner::Scan).to receive(:sleep)
   end
@@ -226,6 +231,10 @@ describe 'nexpose-runner' do
         NexposeRunner::Scan.start(@options) 
       }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
     end
+  end
+
+  if File.file?('config/exploit.yml.bak')
+    File.rename('config/exploit.yml.bak', 'config/exploit.yml')
   end
 end
 

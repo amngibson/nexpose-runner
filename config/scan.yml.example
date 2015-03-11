@@ -1,0 +1,7 @@
+connection_url: ''
+username: ''
+password: ''
+port: '3780'
+site_name: ''
+ip_addresses: ''
+scan_template: ''
