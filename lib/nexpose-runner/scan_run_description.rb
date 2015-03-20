@@ -1,9 +1,15 @@
+require 'yaml'
+
 class ScanRunDescription
   attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template
   @@port_value = ''
   @@ip_addresses = ''
 
   def initialize(options)
+    if File.file?('config/scan.yml')
+      options = YAML.load_file('config/scan.yml')
+    end
+
     self.connection_url = options['connection_url']
     self.username =  options['username']
     self.password = options['password']

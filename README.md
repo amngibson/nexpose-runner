@@ -33,6 +33,8 @@ EXAMPLE:
 
     $ scan "http://test.connection" "rapid7" "password" "3780" "my_cool_software_build-28" "10.5.0.15" "full-audit-widget-corp"
 
+It is possible to use a YAML file to drive the configuration of this module.  An example configuration file is provided in config/scan.yml.example.  Simply copy it to config/scan.yml and modify it to work with your environment.
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/nexpose-scan/fork )
