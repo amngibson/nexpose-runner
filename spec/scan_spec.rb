@@ -1,5 +1,6 @@
 require 'nexpose-runner/scan'
 require 'nexpose-runner/constants'
+require 'ostruct'
 
 describe 'nexpose-runner' do
 
@@ -44,9 +45,11 @@ describe 'nexpose-runner' do
 
 
       @mock_scan = get_mock_scan
+      @mock_scan_summary = get_mock_scan_summary
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
       @mock_report = get_mock_report
+
 
       @options = {
         'connection_url' => @expected_connection,
@@ -168,20 +171,18 @@ describe 'nexpose-runner' do
 
       describe 'wait for the Nexpose Scan to complete' do
         it 'should call to check the status of the scan' do
-          expect(@mock_nexpose_client).to receive(:scan_status).with(@mock_scan_id)
+          expect(@mock_nexpose_client).to receive(:scan_statistics).with(@mock_scan_id)
   
           NexposeRunner::Scan.start(@options)
         end
   
         it 'should call to check the status until it is not running' do
-          expect(@mock_nexpose_client).to receive(:scan_status)
-                                      .with(@mock_scan_id)
+          expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::RUNNING)
                                       .exactly(3).times
                                       .ordered
   
-          expect(@mock_nexpose_client).to receive(:scan_status)
-                                      .with(@mock_scan_id)
+          expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::FINISHED)
                                       .once
                                       .ordered
@@ -190,14 +191,12 @@ describe 'nexpose-runner' do
         end
   
         it 'should sleep for 3 seconds if the status is still running' do
-          expect(@mock_nexpose_client).to receive(:scan_status)
-                                      .with(@mock_scan_id)
+          expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::RUNNING)
                                       .exactly(3).times
                                       .ordered
   
-          expect(@mock_nexpose_client).to receive(:scan_status)
-                                      .with(@mock_scan_id)
+          expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::FINISHED)
                                       .once
                                       .ordered
@@ -258,8 +257,9 @@ def get_mock_nexpose_client
 
   allow(mock_nexpose_client).to receive(:call).with(any_args).and_return({})
 
-  allow(mock_nexpose_client).to receive(:scan_status)
+  allow(mock_nexpose_client).to receive(:scan_statistics)
                                  .with(@mock_scan_id)
+				 .and_return(@mock_scan_summary)
 
   allow(mock_nexpose_client).to receive(:login)
                                   .and_return(true)
@@ -268,6 +268,20 @@ def get_mock_nexpose_client
                              .and_return(mock_nexpose_client)
 
   mock_nexpose_client
+end
+
+def get_mock_scan_summary
+  mock_scan_summary = double(Nexpose::ScanSummary)
+
+  tasks = OpenStruct.new(:completed => 1, :pending => 1)
+  allow(mock_scan_summary).to receive(:tasks).and_return(tasks)
+
+  allow(mock_scan_summary).to receive(:status).and_return(
+				Nexpose::Scan::Status::RUNNING, 
+				Nexpose::Scan::Status::RUNNING,
+ 				Nexpose::Scan::Status::RUNNING, 
+				Nexpose::Scan::Status::FINISHED)
+  mock_scan_summary
 end
 
 def get_mock_nexpose_site

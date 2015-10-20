@@ -55,9 +55,10 @@ module NexposeRunner
       begin
         sleep(3)
         stats = nsc.scan_statistics(scan.id)
+ 	status = stats.status
 	progress = stats.tasks.completed / stats.tasks.pending * 100
         puts "Current #{run_details.site_name} scan status: #{status.to_s} : #{progress.to_s}% completed"
-      end while stats.status == Nexpose::Scan::Status::RUNNING
+      end while status == Nexpose::Scan::Status::RUNNING
     end
 
     def self.create_site(run_details, nsc)
