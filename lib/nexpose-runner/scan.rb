@@ -35,6 +35,9 @@ module NexposeRunner
       policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc)
       generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
 
+      puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
+      generate_audit_report(site.id, nsc, CONSTANTS::AUDIT_REPORT_NAME)
+
       [vulnerbilities, software, policies]
     end
 
@@ -51,8 +54,9 @@ module NexposeRunner
 
       begin
         sleep(3)
-        status = nsc.scan_status(scan.id)
-        puts "Current #{run_details.site_name} scan status: #{status.to_s}"
+        stats = nsc.scan_statistics(scan.id)
+ 	status = stats.status
+        puts "Current #{run_details.site_name} scan status: #{status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
       end while status == Nexpose::Scan::Status::RUNNING
     end
 
@@ -81,6 +85,12 @@ module NexposeRunner
       report.add_filter('site', site)
       report_output = report.generate(nsc)
       CSV.parse(report_output.chomp, {:headers => :first_row})
+    end
+
+    def self.generate_audit_report(site, nsc, name)
+      adhoc = Nexpose::AdhocReportConfig.new('audit-report', 'html', site)
+      data = adhoc.generate(nsc)
+      File.open(name, 'w') { |file| file.write(data) }
     end
 
     def self.generate_csv(csv_output, name)

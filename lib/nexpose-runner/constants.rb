@@ -10,6 +10,7 @@ module CONSTANTS
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
+  AUDIT_REPORT_NAME = 'nexpose-audit-report.html'
 
   VULNERABILITY_REPORT_QUERY = 'SELECT DISTINCT
                                   ip_address,
