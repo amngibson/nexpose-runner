@@ -1,7 +1,7 @@
 require 'yaml'
 
 class ScanRunDescription
-  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template
+  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
   @@port_value = ''
   @@ip_addresses = ''
 
@@ -17,6 +17,7 @@ class ScanRunDescription
     self.site_name = options['site_name']
     self.ip_addresses = options['ip_addresses']
     self.scan_template = options['scan_template']
+    self.engine = options['engine']
   end
 
   def verify

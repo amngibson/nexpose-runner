@@ -10,5 +10,6 @@ NexposeRunner::Scan.start({
   'port' => ARGV[3], 
   'site_name' => ARGV[4], 
   'ip_addresses' => ARGV[5], 
-  'scan_template' => ARGV[6]
+  'scan_template' => ARGV[6],
+  'engine' => ARGV[7]
 })
