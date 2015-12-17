@@ -66,6 +66,9 @@ module NexposeRunner
       run_details.ip_addresses.each { |address|
           site.add_ip address
       }
+      if run_details.engine
+        site.engine = run_details.engine
+      end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
       site

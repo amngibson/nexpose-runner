@@ -24,10 +24,10 @@ Or install it yourself as:
 
 ## Usage
 
-This gem allows you to specify the Nexpose Server URL, Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, and a Scan Template.
+This gem allows you to specify the Nexpose Server URL, Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, Scan Template, and Engine Number (optional).
 
 
-    $ scan "connection_url" "username" "password" "port" "site_name" "ip_address" "scan_template"
+    $ scan "connection_url" "username" "password" "port" "site_name" "ip_address" "scan_template" "engine_number"
     
 EXAMPLE:
 
