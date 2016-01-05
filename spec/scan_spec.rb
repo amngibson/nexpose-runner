@@ -209,7 +209,7 @@ describe 'nexpose-runner' do
 
       describe 'it should create reports' do
       it 'should generate, download, and parse an adhoc reports for Vulnerability, Software, and Policies' do
-        expect(Nexpose::AdhocReportConfig).to receive(:new)
+          expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(nil, 'sql')
                                                 .and_return(@mock_report)
 
@@ -217,6 +217,17 @@ describe 'nexpose-runner' do
           expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report)
           expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report)
 
+          expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
+                                                .and_return(@mock_report)
+        
+          expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                .with(CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT, @mock_site_id)
+                                                .and_return(@mock_report)
+
+          expect_template_report_to_be_called_with(CONSTANTS::AUDIT_REPORT_FILE_NAME)
+          expect_template_report_to_be_called_with(CONSTANTS::XML_REPORT_FILE_NAME)
+          
           expect { 
             NexposeRunner::Scan.start(@options) 
           }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
@@ -250,6 +261,11 @@ def expect_report_to_be_called_with(report_name, report_query, report_response)
   expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(report_response).ordered
 
   expect(CSV).to receive(:open).with(report_name, 'w').ordered
+end
+
+def expect_template_report_to_be_called_with(report_file_name)
+  expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).ordered
+  expect(File).to receive(:open).with(report_file_name, 'w').ordered
 end
 
 def get_mock_nexpose_client
@@ -333,6 +349,7 @@ def get_mock_report
                           .and_return(mock_report)
 
   allow(CSV).to receive(:open).with(any_args)
+  allow(File).to receive(:open).with(any_args)
 
   mock_report
 end

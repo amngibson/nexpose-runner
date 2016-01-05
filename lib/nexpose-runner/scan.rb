@@ -36,7 +36,7 @@ module NexposeRunner
       generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
 
       puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
-      generate_template_report(site.id, nsc, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
+      generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
       
       puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
       generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
