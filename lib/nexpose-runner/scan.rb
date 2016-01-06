@@ -51,13 +51,23 @@ module NexposeRunner
 
       puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template} scan template"
       scan = site.scan nsc
-
+      retry_count = 0
       begin
         sleep(3)
-        stats = nsc.scan_statistics(scan.id)
- 	status = stats.status
+        begin
+          stats = nsc.scan_statistics(scan.id)
+        rescue
+          if retry_count == CONSTANTS::MAX_RETRY_COUNT
+            raise
+          end
+            retry_count = retry_count + 1
+            next
+        end
+ 	    status = stats.status
         puts "Current #{run_details.site_name} scan status: #{status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
+        retry_count = 0
       end while status == Nexpose::Scan::Status::RUNNING
+
     end
 
     def self.create_site(run_details, nsc)
@@ -94,6 +104,9 @@ module NexposeRunner
       adhoc = Nexpose::AdhocReportConfig.new('audit-report', 'html', site)
       data = adhoc.generate(nsc)
       File.open(name, 'w') { |file| file.write(data) }
+      xml_export = Nexpose::AdhocReportConfig.new('raw-xml', 'xml', site)
+      xml_data = xml_export.generate(nsc)
+      File.open(xml_data, 'w') { |file| file.write(xml_data) }
     end
 
     def self.generate_csv(csv_output, name)
