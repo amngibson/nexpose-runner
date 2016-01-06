@@ -60,6 +60,7 @@ module NexposeRunner
           if retry_count == CONSTANTS::MAX_RETRY_COUNT
             raise
           end
+            puts "Status Check failed, incrementing retry count to #{retry_count}"
             retry_count = retry_count + 1
             next
         end
