@@ -36,7 +36,10 @@ module NexposeRunner
       generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
 
       puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
-      generate_audit_report(site.id, nsc, CONSTANTS::AUDIT_REPORT_NAME)
+      generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
+
+      puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
+      generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
 
       [vulnerbilities, software, policies]
     end
@@ -101,13 +104,10 @@ module NexposeRunner
       CSV.parse(report_output.chomp, {:headers => :first_row})
     end
 
-    def self.generate_audit_report(site, nsc, name)
-      adhoc = Nexpose::AdhocReportConfig.new('audit-report', 'html', site)
+    def self.generate_template_report(nsc, site, file_name, report_name, report_format)
+      adhoc = Nexpose::AdhocReportConfig.new(report_name, report_format, site)
       data = adhoc.generate(nsc)
-      File.open(name, 'w') { |file| file.write(data) }
-      xml_export = Nexpose::AdhocReportConfig.new('raw-xml', 'xml', site)
-      xml_data = xml_export.generate(nsc)
-      File.open(xml_data, 'w') { |file| file.write(xml_data) }
+      File.open(file_name, 'w') { |file| file.write(data) }
     end
 
     def self.generate_csv(csv_output, name)
