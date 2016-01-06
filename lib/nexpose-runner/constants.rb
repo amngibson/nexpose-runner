@@ -10,7 +10,14 @@ module CONSTANTS
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
-  AUDIT_REPORT_NAME = 'nexpose-audit-report.html'
+
+  AUDIT_REPORT_FILE_NAME = 'nexpose-audit-report.html'
+  AUDIT_REPORT_NAME = 'audit-report'
+  AUDIT_REPORT_FORMAT = 'html'
+
+  XML_REPORT_FILE_NAME = 'nexpose-xml-report.xml'
+  XML_REPORT_NAME = 'audit-report'
+  XML_REPORT_FORMAT = 'raw-xml'
 
   VULNERABILITY_REPORT_QUERY = 'SELECT DISTINCT
                                   ip_address,
