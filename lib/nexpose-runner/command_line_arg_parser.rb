@@ -49,6 +49,10 @@ class CommandLineArgumentParser
       opts.on('--engine ENGINE', 'Nexpose scan engine to use') do |engine|
         options['engine'] = engine
       end
+      
+      opts.on('--exception-file EXCEPTIONS', 'Exception file to use for site level vulnerability exceptions') do |exceptions|
+        options['exception_file'] = exceptions
+      end
     end
 
     opt_parser.parse!(args)

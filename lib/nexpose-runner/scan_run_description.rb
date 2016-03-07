@@ -2,7 +2,7 @@ require 'yaml'
 require 'nexpose-runner/command_line_arg_parser'
 
 class ScanRunDescription
-  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
+  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine, :exception_file
   @@port_value = ''
   @@ip_addresses = ''
 
@@ -21,6 +21,12 @@ class ScanRunDescription
     self.ip_addresses = options['ip_addresses']
     self.scan_template = options['scan_template']
     self.engine = options['engine']
+    
+    if options.include? 'exception_file'
+      self.exception_file = options['exception_file']
+    else
+      self.exception_file = nil
+    end
   end
 
   def verify
@@ -46,6 +52,10 @@ class ScanRunDescription
 
   def ip_addresses
     @@ip_addresses
+  end
+  
+  def has_exceptions
+     self.exception_file.nil? || self.exception_file.empty?
   end
 
   def get_value(value_to_check, default)
