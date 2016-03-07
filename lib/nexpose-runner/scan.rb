@@ -85,6 +85,7 @@ module NexposeRunner
     def self.create_exceptions(nsc, exceptions_file, site)
       # Go get assets by site name
       assets = nsc.filter(Nexpose::Search::Field::SITE_ID, Nexpose::Search::Operator::IN, site.id)
+      puts "Assets Found: " + assets.length.to_s
     
       # Create Exceptions
       file = File.read(exceptions_file)
