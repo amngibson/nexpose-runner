@@ -15,7 +15,6 @@ if ARGV.grep(/^--/).empty?
     'scan_template' => ARGV[6],
     'engine' => ARGV[7]
   })
-end
 else
   NexposeRunner::Scan.start(ARGV)
 end
