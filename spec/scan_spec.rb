@@ -193,14 +193,14 @@ describe 'nexpose-runner' do
       
       it 'should save vulnerability exceptions' do    
         expect(@mock_vuln_except).to receive(:save)
-                                      .with(@mock_nexpose_client)
+                                      .with(@mock_nexpose_client, CONSTANTS::VULNERABILITY_EXCEPTION_SUBMIT_COMMENT)
 
         NexposeRunner::Scan.start(@options)
       end
       
       it 'should approve vulnerability exceptions' do   
         expect(@mock_vuln_except).to receive(:approve)
-                                      .with(@mock_nexpose_client)
+                                      .with(@mock_nexpose_client, CONSTANTS::VULNERABILITY_EXCEPTION_APPROVE_COMMENT)
 
         NexposeRunner::Scan.start(@options)
       end
@@ -417,10 +417,10 @@ def get_mock_exception
   mock_exception = double(Nexpose::VulnException)
   
   allow(mock_exception).to receive(:save)
-                          .with(@mock_nexpose_client)
+                          .with(@mock_nexpose_client, CONSTANTS::VULNERABILITY_EXCEPTION_SUBMIT_COMMENT)
     
   allow(mock_exception).to receive(:approve)
-                          .with(@mock_nexpose_client)
+                          .with(@mock_nexpose_client, CONSTANTS::VULNERABILITY_EXCEPTION_APPROVE_COMMENT)
                           
   allow(mock_exception).to receive(:asset_id=)
                           .with(any_args)

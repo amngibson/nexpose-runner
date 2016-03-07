@@ -89,8 +89,8 @@ module NexposeRunner
         exc = Nexpose::VulnException.new exception['id'], Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET, exception['reason']
         exc.asset_id = 0
         exc.port = 1030
-        exc.save nsc
-        exc.approve nsc
+        exc.save nsc, CONSTANTS::VULNERABILITY_EXCEPTION_SUBMIT_COMMENT
+        exc.approve nsc, CONSTANTS::VULNERABILITY_EXCEPTION_APPROVE_COMMENT
       end
     end
 

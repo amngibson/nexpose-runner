@@ -10,6 +10,8 @@ module CONSTANTS
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
+  VULNERABILITY_EXCEPTION_SUBMIT_COMMENT = 'Automatically submitting for the site'
+  VULNERABILITY_EXCEPTION_APPROVE_COMMENT = 'Automatically approving for the site'
 
   AUDIT_REPORT_FILE_NAME = 'nexpose-audit-report.html'
   AUDIT_REPORT_NAME = 'audit-report'
