@@ -53,10 +53,6 @@ class ScanRunDescription
   def ip_addresses
     @@ip_addresses
   end
-  
-  def has_exceptions
-     self.exception_file.nil? || self.exception_file.empty?
-  end
 
   def get_value(value_to_check, default)
     (value_to_check.nil? || value_to_check.empty?) ? default : value_to_check

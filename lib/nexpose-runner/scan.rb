@@ -1,8 +1,8 @@
 require 'nexpose'
 require 'csv'
+require 'json'
 require 'nexpose-runner/constants'
 require 'nexpose-runner/scan_run_description'
-
 
 module NexposeRunner
   module Scan
@@ -74,7 +74,24 @@ module NexposeRunner
       end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
+      
+      unless run_details.exception_file.nil? 
+        create_exceptions(nsc, run_details.exception_file, site)
+      end
+      
       site
+    end
+    
+    def self.create_exceptions(nsc, exceptions_file, site)
+      file = File.read(exceptions_file)
+      exceptions = JSON.parse(file)
+      exceptions['exceptions'].each do |exception|
+        exc = Nexpose::VulnException.new exception['id'], Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET, exception['reason']
+        exc.asset_id = 0
+        exc.port = 1030
+        exc.save nsc
+        exc.approve nsc
+      end
     end
 
     def self.get_new_nexpose_connection(run_details)

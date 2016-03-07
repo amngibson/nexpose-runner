@@ -21,8 +21,15 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
       @expected_scan_template = 'full-audit-widget-corp'
+      @expected_exception_file = 'exceptions.json'
+      
       @mock_scan_id = '12'
       @mock_site_id = '1'
+      @mock_vuln_ex_id = '100'
+      @mock_vuln_ex_reason = 'Because we feel like it!'
+
+      @exceptions_json = '{ "exceptions": [ {"id":"' + @mock_vuln_ex_id + '", "reason":"' + @mock_vuln_ex_reason + '"} ] }'
+      File.open(@expected_exception_file, 'w+') {|f| f.write(@exceptions_json) }
 
       @mock_no_vuln_report = 'ip_address,title,date_published,severity,summary,fix'
       @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
@@ -49,6 +56,7 @@ describe 'nexpose-runner' do
       @mock_nexpose_client = get_mock_nexpose_client
       @mock_nexpose_site = get_mock_nexpose_site
       @mock_report = get_mock_report
+      @mock_vuln_except = get_mock_exception
 
 
       @options = {
@@ -58,9 +66,13 @@ describe 'nexpose-runner' do
         'port' => @expected_port,
         'site_name' => @expected_site_name,
         'ip_addresses' => @expected_ips,
-        'scan_template' => @expected_scan_template
+        'scan_template' => @expected_scan_template,
+        'exception_file' => @expected_exception_file
       }
 
+    end
+    after(:each) do
+      File.delete(@expected_exception_file)
     end
 
       it 'should create a session with the nexpose server' do
@@ -168,6 +180,30 @@ describe 'nexpose-runner' do
 
         NexposeRunner::Scan.start(@options)
       end
+      
+       it 'should create a vulnerability exception' do    
+        expect(Nexpose::VulnException).to receive(:new)
+                                      .with(@mock_vuln_ex_id,
+                                            Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET,
+                                            @mock_vuln_ex_reason)
+                                      .and_return(@mock_vuln_except)
+
+        NexposeRunner::Scan.start(@options)
+      end
+      
+      it 'should save vulnerability exceptions' do    
+        expect(@mock_vuln_except).to receive(:save)
+                                      .with(@mock_nexpose_client)
+
+        NexposeRunner::Scan.start(@options)
+      end
+      
+      it 'should approve vulnerability exceptions' do   
+        expect(@mock_vuln_except).to receive(:approve)
+                                      .with(@mock_nexpose_client)
+
+        NexposeRunner::Scan.start(@options)
+      end
 
       describe 'wait for the Nexpose Scan to complete' do
         it 'should call to check the status of the scan' do
@@ -270,6 +306,8 @@ end
 
 def get_mock_nexpose_client
   mock_nexpose_client = double(Nexpose::Connection)
+  xml = REXML::Element.new('test')
+  mock_api_request = double(Nexpose::APIRequest)
 
   allow(mock_nexpose_client).to receive(:call).with(any_args).and_return({})
 
@@ -282,9 +320,24 @@ def get_mock_nexpose_client
 
   allow(Nexpose::Connection).to receive(:new)
                              .and_return(mock_nexpose_client)
-
+                             
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+                             
+  allow(mock_nexpose_client).to receive(:execute)
+                             .with(any_args)
+                             .and_return(mock_api_request)
+                             
+  allow(mock_api_request).to receive(:success)
+                             .and_return(false) #this is just to shut up the underlying api.
+                             
+  allow(mock_api_request).to receive(:attributes)
+                             .and_return(xml)                             
+                             
   mock_nexpose_client
 end
+
 
 def get_mock_scan_summary
   mock_scan_summary = double(Nexpose::ScanSummary)
@@ -358,4 +411,25 @@ def get_mock_scan
   mock_scan = double(Nexpose::Scan)
   allow(mock_scan).to receive(:id).and_return(@mock_scan_id)
   mock_scan
+end
+
+def get_mock_exception
+  mock_exception = double(Nexpose::VulnException)
+  
+  allow(mock_exception).to receive(:save)
+                          .with(@mock_nexpose_client)
+    
+  allow(mock_exception).to receive(:approve)
+                          .with(@mock_nexpose_client)
+                          
+  allow(mock_exception).to receive(:asset_id=)
+                          .with(any_args)
+                          
+  allow(mock_exception).to receive(:port=)
+                          .with(any_args)
+                          
+  allow(Nexpose::VulnException).to receive(:new)
+                          .and_return(mock_exception)
+  
+  mock_exception
 end
