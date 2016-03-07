@@ -26,9 +26,10 @@ describe 'nexpose-runner' do
       @mock_scan_id = '12'
       @mock_site_id = '1'
       @mock_vuln_ex_id = '100'
+      @mock_vuln_ex_port = '65536'
       @mock_vuln_ex_reason = 'Because we feel like it!'
 
-      @exceptions_json = '{ "exceptions": [ {"id":"' + @mock_vuln_ex_id + '", "reason":"' + @mock_vuln_ex_reason + '"} ] }'
+      @exceptions_json = '{ "exceptions": [ {"id":"' + @mock_vuln_ex_id + '", "reason":"' + @mock_vuln_ex_reason + '", "port":"' + @mock_vuln_ex_port + '"} ] }'
       File.open(@expected_exception_file, 'w+') {|f| f.write(@exceptions_json) }
 
       @mock_no_vuln_report = 'ip_address,title,date_published,severity,summary,fix'
@@ -187,6 +188,9 @@ describe 'nexpose-runner' do
                                             Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET,
                                             @mock_vuln_ex_reason)
                                       .and_return(@mock_vuln_except)
+                                      
+        expect(@mock_vuln_except).to receive(:port=)
+                                      .with(@mock_vuln_ex_port)
 
         NexposeRunner::Scan.start(@options)
       end
@@ -324,6 +328,14 @@ def get_mock_nexpose_client
   allow(mock_nexpose_client).to receive(:make_xml)
                              .with(any_args)
                              .and_return(xml)
+                             
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+                             
+  allow(mock_nexpose_client).to receive(:filter)
+                            .with(any_args)
+                            .and_return({})                             
                              
   allow(mock_nexpose_client).to receive(:execute)
                              .with(any_args)
