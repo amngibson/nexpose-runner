@@ -43,7 +43,7 @@ class CommandLineArgumentParser
       end
       
       opts.on('--scan-template TEMPLATE', 'Nexpose scan template to use') do |template|
-        options['template'] = template
+        options['scan_template'] = template
       end
       
       opts.on('--engine ENGINE', 'Nexpose scan engine to use') do |engine|
