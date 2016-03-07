@@ -83,12 +83,16 @@ module NexposeRunner
     end
     
     def self.create_exceptions(nsc, exceptions_file, site)
+      # Go get assets by site name
+      assets = nsc.filter(Search::Field::SITE_ID, Search::Operator::IN, site.id)
+    
+      # Create Exceptions
       file = File.read(exceptions_file)
       exceptions = JSON.parse(file)
       exceptions['exceptions'].each do |exception|
         exc = Nexpose::VulnException.new exception['id'], Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET, exception['reason']
-        exc.asset_id = 0
-        exc.port = 1030
+        exc.asset_id = assets.select {|a| a.ip == exception['ip']}
+        exc.port = exception['port']
         exc.save nsc, CONSTANTS::VULNERABILITY_EXCEPTION_SUBMIT_COMMENT
         exc.approve nsc, CONSTANTS::VULNERABILITY_EXCEPTION_APPROVE_COMMENT
       end
