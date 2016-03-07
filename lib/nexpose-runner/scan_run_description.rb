@@ -4,7 +4,7 @@ require 'nexpose-runner/command_line_arg_parser'
 class ScanRunDescription
   attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine, :exception_file
   @@port_value = ''
-  @@ip_addresses = ''
+  @@ip_addresses = []
 
   def initialize(options)
     if File.file?('config/scan.yml')
@@ -47,7 +47,7 @@ class ScanRunDescription
   end
 
   def ip_addresses=(value)
-    @@ip_addresses = value.split(',')
+    @@ip_addresses = value.split(',') unless value.nil?
   end
 
   def ip_addresses
