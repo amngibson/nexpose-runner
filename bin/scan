@@ -3,13 +3,19 @@
 require 'nexpose-runner/scan'
 
 $stdout.sync = true
-NexposeRunner::Scan.start({
-  'connection_url' => ARGV[0], 
-  'username' => ARGV[1], 
-  'password' => ARGV[2], 
-  'port' => ARGV[3], 
-  'site_name' => ARGV[4], 
-  'ip_addresses' => ARGV[5], 
-  'scan_template' => ARGV[6],
-  'engine' => ARGV[7]
-})
+
+if ARGV.grep(/^--/).empty?
+  NexposeRunner::Scan.start({
+    'connection_url' => ARGV[0], 
+    'username' => ARGV[1], 
+    'password' => ARGV[2], 
+    'port' => ARGV[3], 
+    'site_name' => ARGV[4], 
+    'ip_addresses' => ARGV[5], 
+    'scan_template' => ARGV[6],
+    'engine' => ARGV[7]
+  })
+end
+else
+  NexposeRunner::Scan.start(ARGV)
+end
