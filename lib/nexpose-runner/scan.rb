@@ -75,28 +75,7 @@ module NexposeRunner
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
       
-      unless run_details.exception_file.nil? 
-        create_exceptions(nsc, run_details.exception_file, site)
-      end
-      
       site
-    end
-    
-    def self.create_exceptions(nsc, exceptions_file, site)
-      # Go get assets by site name
-      assets = nsc.filter(Nexpose::Search::Field::SITE_ID, Nexpose::Search::Operator::IN, site.id)
-      puts "Assets Found: " + assets.length.to_s
-    
-      # Create Exceptions
-      file = File.read(exceptions_file)
-      exceptions = JSON.parse(file)
-      exceptions['exceptions'].each do |exception|
-        exc = Nexpose::VulnException.new exception['id'], Nexpose::VulnException::Scope::SPECIFIC_INSTANCE_OF_SPECIFIC_ASSET, exception['reason']
-        exc.asset_id = assets.select {|a| a.ip == exception['ip']}
-        exc.port = exception['port']
-        exc.save nsc, CONSTANTS::VULNERABILITY_EXCEPTION_SUBMIT_COMMENT
-        exc.approve nsc, CONSTANTS::VULNERABILITY_EXCEPTION_APPROVE_COMMENT
-      end
     end
 
     def self.get_new_nexpose_connection(run_details)
