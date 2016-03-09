@@ -21,12 +21,6 @@ class ScanRunDescription
     self.ip_addresses = options['ip_addresses']
     self.scan_template = options['scan_template']
     self.engine = options['engine']
-    
-    if options.include? 'exception_file'
-      self.exception_file = options['exception_file']
-    else
-      self.exception_file = nil
-    end
   end
 
   def verify
