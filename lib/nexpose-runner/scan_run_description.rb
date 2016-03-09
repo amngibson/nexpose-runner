@@ -2,7 +2,7 @@ require 'yaml'
 require 'nexpose-runner/command_line_arg_parser'
 
 class ScanRunDescription
-  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine, :exception_file
+  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
   @@port_value = ''
   @@ip_addresses = []
 
