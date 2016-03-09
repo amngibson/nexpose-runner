@@ -8,6 +8,7 @@ module CONSTANTS
   VULNERABILITY_FOUND_MESSAGE = '---------All YOUR BASE ARE BELONG TO US---------------\nVulnerabilities were found, breaking build'
   DEFAULT_PORT = '3780'
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
+  VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report.csv' 
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
 
@@ -32,6 +33,19 @@ module CONSTANTS
                                 JOIN dim_vulnerability_solution USING (vulnerability_id)
                                 JOIN dim_solution_highest_supercedence USING (solution_id)
                                 JOIN dim_solution ds ON superceding_solution_id = ds.solution_id'
+                                
+  VULNERABILITY_DETAIL_REPORT_QUERY = 'SELECT DISTINCT
+                                          fasvi.vulnerability_id,
+                                          da.ip_address,
+                                          CASE WHEN fasvi.port = -1 THEN NULL ELSE fasvi.port END,
+                                          dv.title,
+                                          dv.description,
+                                          ds.fix
+                                        FROM fact_asset_scan_vulnerability_instance fasvi
+                                        JOIN dim_asset da USING (asset_id)
+                                        JOIN dim_vulnerability dv USING (vulnerability_id)
+                                        JOIN dim_vulnerability_solution dvs USING (vulnerability_id)
+                                        JOIN dim_solution ds USING (solution_id)'
 
   SOFTWARE_REPORT_QUERY = 'SELECT
                              dsi.name,
