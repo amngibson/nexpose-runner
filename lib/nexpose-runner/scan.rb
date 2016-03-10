@@ -1,8 +1,8 @@
 require 'nexpose'
 require 'csv'
+require 'json'
 require 'nexpose-runner/constants'
 require 'nexpose-runner/scan_run_description'
-
 
 module NexposeRunner
   module Scan
@@ -26,6 +26,10 @@ module NexposeRunner
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
       vulnerbilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
       generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+      
+      puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
+      vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
+      generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
 
       puts "Scan complete for #{run_details.site_name}, Generating Software Report"
       software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
@@ -74,6 +78,7 @@ module NexposeRunner
       end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
+      
       site
     end
 

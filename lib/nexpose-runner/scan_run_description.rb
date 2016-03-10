@@ -1,13 +1,16 @@
 require 'yaml'
+require 'nexpose-runner/command_line_arg_parser'
 
 class ScanRunDescription
   attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
   @@port_value = ''
-  @@ip_addresses = ''
+  @@ip_addresses = []
 
   def initialize(options)
     if File.file?('config/scan.yml')
       options = YAML.load_file('config/scan.yml')
+    elsif options.instance_of? Array
+      options = CommandLineArgumentParser.parse(options)
     end
 
     self.connection_url = options['connection_url']
@@ -38,7 +41,7 @@ class ScanRunDescription
   end
 
   def ip_addresses=(value)
-    @@ip_addresses = value.split(',')
+    @@ip_addresses = value.split(',') unless value.nil?
   end
 
   def ip_addresses

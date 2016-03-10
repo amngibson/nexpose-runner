@@ -21,6 +21,7 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
       @expected_scan_template = 'full-audit-widget-corp'
+      
       @mock_scan_id = '12'
       @mock_site_id = '1'
 
@@ -28,6 +29,8 @@ describe 'nexpose-runner' do
       @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
                             10.5.0.15,Database Open Access,2010-01-01,Severe,Restrict database access,<p><p>Configure the database server to only allow access to trusted systems. For example, the PCI DSS standard requires you to place the database in an internal network zone, segregated from the DMZ </p></p>
                             10.5.0.15.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,<p>Download and apply the upgrade from: <a href=http://dev.mysql.com/downloads/mysql>http://dev.mysql.com/downloads/mysql</a></p>'.chomp
+                            
+      @mock_vuln_detail_report = 'stuff'.chomp
 
       @mock_software_report = 'name,ip_address,host_name,description,description,vendor,name,version
                               my_cool_software_build-28,10.5.0.15,,CentOS Linux 6.5,Virtual Machine,Linux,MAKEDEV,3.24-6.el6
@@ -58,7 +61,8 @@ describe 'nexpose-runner' do
         'port' => @expected_port,
         'site_name' => @expected_site_name,
         'ip_addresses' => @expected_ips,
-        'scan_template' => @expected_scan_template
+        'scan_template' => @expected_scan_template,
+        'exception_file' => @expected_exception_file
       }
 
     end
@@ -214,6 +218,7 @@ describe 'nexpose-runner' do
                                                 .and_return(@mock_report)
 
           expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+          expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME, CONSTANTS::VULNERABILITY_DETAIL_REPORT_QUERY, @mock_vuln_detail_report)
           expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report)
           expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report)
 
@@ -270,6 +275,8 @@ end
 
 def get_mock_nexpose_client
   mock_nexpose_client = double(Nexpose::Connection)
+  xml = REXML::Element.new('test')
+  mock_api_request = double(Nexpose::APIRequest)
 
   allow(mock_nexpose_client).to receive(:call).with(any_args).and_return({})
 
@@ -282,9 +289,32 @@ def get_mock_nexpose_client
 
   allow(Nexpose::Connection).to receive(:new)
                              .and_return(mock_nexpose_client)
-
+                             
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+                             
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+                             
+  allow(mock_nexpose_client).to receive(:filter)
+                            .with(any_args)
+                            .and_return({})                             
+                             
+  allow(mock_nexpose_client).to receive(:execute)
+                             .with(any_args)
+                             .and_return(mock_api_request)
+                             
+  allow(mock_api_request).to receive(:success)
+                             .and_return(false) #this is just to shut up the underlying api.
+                             
+  allow(mock_api_request).to receive(:attributes)
+                             .and_return(xml)                             
+                             
   mock_nexpose_client
 end
+
 
 def get_mock_scan_summary
   mock_scan_summary = double(Nexpose::ScanSummary)
@@ -359,3 +389,4 @@ def get_mock_scan
   allow(mock_scan).to receive(:id).and_return(@mock_scan_id)
   mock_scan
 end
+
