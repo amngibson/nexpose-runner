@@ -29,7 +29,7 @@ module NexposeRunner
       
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
       vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
-      generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
+      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
 
       puts "Scan complete for #{run_details.site_name}, Generating Software Report"
       software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
