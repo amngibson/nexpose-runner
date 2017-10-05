@@ -1,5 +1,6 @@
 module CONSTANTS
   REQUIRED_CONNECTION_URL_MESSAGE = 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server'
+  DEFAULT_EXCEPTIONS_URL = ''
   REQUIRED_USERNAME_MESSAGE = 'OOPS! Looks like you forgot to give me a username to login to Nexpose with'
   REQUIRED_PASSWORD_MESSAGE = 'OOPS! Looks like you forgot to give me a password to login to Nexpose with'
   REQUIRED_SITE_NAME_MESSAGE = 'OOPS! Looks like you forgot to give me a Nexpose Site Name'
