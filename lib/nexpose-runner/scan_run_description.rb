@@ -2,9 +2,10 @@ require 'yaml'
 require 'nexpose-runner/command_line_arg_parser'
 
 class ScanRunDescription
-  attr_accessor :connection_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
+  attr_accessor :connection_url, :exceptions_list_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
   @@port_value = ''
   @@ip_addresses = []
+  exceptions_list_url_value = ''
 
   def initialize(options)
     if File.file?('config/scan.yml')
@@ -14,6 +15,7 @@ class ScanRunDescription
     end
 
     self.connection_url = options['connection_url']
+    @@exceptions_list_url_value = options['exceptions_list_url']
     self.username =  options['username']
     self.password = options['password']
     @@port_value = options['port']
@@ -30,6 +32,7 @@ class ScanRunDescription
     raise StandardError, CONSTANTS::REQUIRED_SITE_NAME_MESSAGE if site_name.nil? || site_name.empty?
     raise StandardError, CONSTANTS::REQUIRED_IP_ADDRESS_MESSAGE if ip_addresses.length == 0
     raise StandardError, CONSTANTS::REQUIRED_SCAN_TEMPLATE_MESSAGE if scan_template.nil? || scan_template.empty?
+
   end
 
   def port=(value)
@@ -38,6 +41,14 @@ class ScanRunDescription
 
   def port
     get_value(@@port_value, CONSTANTS::DEFAULT_PORT)
+  end
+
+  def exceptions_list_url=(value)
+    @@exceptions_list_url_value = value
+  end
+
+  def exceptions_list_url
+    get_value(@@exceptions_list_url_value, CONSTANTS::DEFAULT_EXCEPTIONS_URL)
   end
 
   def ip_addresses=(value)

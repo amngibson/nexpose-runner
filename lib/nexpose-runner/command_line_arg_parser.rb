@@ -4,6 +4,7 @@ class CommandLineArgumentParser
   def self.parse(args)
     options = {}
     options['connection_url'] = ''
+    options['exceptions_list_url'] = ''
     options['username'] = ''
     options['password'] = ''
     options['port'] = 0
@@ -22,6 +23,9 @@ class CommandLineArgumentParser
         options['connection_url'] = url
       end
       
+      opts.on('--exceptions_list_url eURL', 'Vulnerability list URL') do |exceptions_list_url| 
+              options['exceptions_list_url'] = exceptions_list_url
+      end      
       opts.on('--username USERNAME', 'Nexpose Login Username') do |username|
         options['username'] = username
       end
@@ -49,6 +53,8 @@ class CommandLineArgumentParser
       opts.on('--engine ENGINE', 'Nexpose scan engine to use') do |engine|
         options['engine'] = engine
       end
+
+      
       
     end
 
