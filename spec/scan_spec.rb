@@ -29,7 +29,8 @@ describe 'nexpose-runner' do
       @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
                             10.5.0.15,Database Open Access,2010-01-01,Severe,Restrict database access,<p><p>Configure the database server to only allow access to trusted systems. For example, the PCI DSS standard requires you to place the database in an internal network zone, segregated from the DMZ </p></p>
                             10.5.0.15.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,<p>Download and apply the upgrade from: <a href=http://dev.mysql.com/downloads/mysql>http://dev.mysql.com/downloads/mysql</a></p>'.chomp
-                            
+      @mock_exceptions = "Database Open Access\nMySQL Obsolete Version"                      
+      
       @mock_vuln_detail_report = 'stuff'.chomp
 
       @mock_software_report = 'name,ip_address,host_name,description,description,vendor,name,version
@@ -62,7 +63,6 @@ describe 'nexpose-runner' do
         'site_name' => @expected_site_name,
         'ip_addresses' => @expected_ips,
         'scan_template' => @expected_scan_template,
-        'exception_file' => @expected_exception_file
       }
 
     end
@@ -246,11 +246,28 @@ describe 'nexpose-runner' do
         NexposeRunner::Scan.start(@options) 
       }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
     end
+
+    it 'should not throw exception if exceptions exist for all vulnerabilities' do
+      expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+      
+      options = @options.clone
+      options['exceptions_list_url'] = 'http://google.com'
+      
+      expect_exceptions_to_be_called_with(options['exceptions_list_url'])
+      
+      NexposeRunner::Scan.start(options)
+      end
   end
 
   if File.file?('config/exploit.yml.bak')
     File.rename('config/exploit.yml.bak', 'config/exploit.yml')
   end
+end
+
+def expect_exceptions_to_be_called_with(exceptions_list_url)
+  uri = URI(exceptions_list_url)
+  expect(Net::HTTP).to receive(:get)
+                          .with(uri).and_return(@mock_exceptions)
 end
 
 def expect_report_to_be_called_with(report_name, report_query, report_response)
