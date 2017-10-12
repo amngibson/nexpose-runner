@@ -11,9 +11,10 @@ module NexposeRunner
     
     def self.allow_vulnerabilities?(vulnerabilities, run_details)
       vuln_array = []
+      exceptions_array = get_exceptions(run_details)
       titles = vulnerabilities.map{ |v| v[1] }[1..-1]
       for vuln in titles
-        if !get_exceptions(run_details).include?(vuln)
+        if !exceptions_array.include?(vuln)
         puts "#{vuln} not found in Exceptions list"
         vuln_array << [vuln]
         end
