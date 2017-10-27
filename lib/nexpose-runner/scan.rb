@@ -8,7 +8,7 @@ require 'nexpose-runner/scan_run_description'
 
 module NexposeRunner
   module Scan
-    
+
     def self.allow_vulnerabilities?(vulnerabilities, run_details)
       vuln_array = []
       exceptions_array = get_exceptions(run_details)
@@ -33,8 +33,14 @@ module NexposeRunner
     end
 
     def self.get_exceptions(run_details)
-      uri = URI("#{run_details.exceptions_list_url}")
-      ex = Net::HTTP.get(uri).split("\n")
+      path = "#{run_details.exceptions_list_url}"
+      uri = URI(path)
+      if path.include? "http:"
+        ex = Net::HTTP.get(uri).split("\n")
+      elsif path.include? "file:"
+        path = path.gsub('file://', '')
+        ex = File.read(path).split("\n")
+      end
       ex
     end
 
@@ -58,7 +64,7 @@ module NexposeRunner
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
       vulnerabilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
       generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
-      
+
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
       vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
       generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
@@ -73,7 +79,7 @@ module NexposeRunner
 
       puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
       generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
-      
+
       puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
       generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
 
@@ -83,7 +89,7 @@ module NexposeRunner
     def self.verify_run(vulnerabilities, run_details)
 
       if run_details.exceptions_list_url.to_s.empty? and vulnerabilities.count > 0
-        raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE 
+        raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE
 
       elsif vulnerabilities.count == 0
           puts "No vulnerabilities found!"
@@ -118,7 +124,7 @@ module NexposeRunner
       end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
-      
+
       site
     end
 
