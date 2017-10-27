@@ -5,6 +5,8 @@ class ScanRunDescription
   attr_accessor :connection_url, :exceptions_list_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
   @@port_value = ''
   @@ip_addresses = []
+  @@timeout = ''
+  @@open_timeout =''
   exceptions_list_url_value = ''
 
   def initialize(options)
@@ -23,6 +25,8 @@ class ScanRunDescription
     self.ip_addresses = options['ip_addresses']
     self.scan_template = options['scan_template']
     self.engine = options['engine']
+    self.timeout = options['timeout']
+    self.open_timeout = options['open_timeout']
   end
 
   def verify
@@ -41,6 +45,22 @@ class ScanRunDescription
 
   def port
     get_value(@@port_value, CONSTANTS::DEFAULT_PORT)
+  end
+
+  def timeout=(value)
+    @@timeout = value
+  end
+
+  def timeout
+    get_value(@@timeout, CONSTANTS::DEFAULT_TIMEOUT)
+  end
+
+  def open_timeout=(value)
+    @@open_timeout = value
+  end
+
+  def open_timeout
+    get_value(@@open_timeout, CONSTANTS::DEFAULT_OPEN_TIMEOUT)
   end
 
   def exceptions_list_url=(value)

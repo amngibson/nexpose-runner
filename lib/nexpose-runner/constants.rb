@@ -8,8 +8,10 @@ module CONSTANTS
   REQUIRED_SCAN_TEMPLATE_MESSAGE = 'OOPS! Looks like you forgot to give me a Scan Template to use'
   VULNERABILITY_FOUND_MESSAGE = '---------All YOUR BASE ARE BELONG TO US---------------\nVulnerabilities were found, breaking build'
   DEFAULT_PORT = '3780'
+  DEFAULT_TIMEOUT = '120'
+  DEFAULT_OPEN_TIMEOUT = '120'
   VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
-  VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report.csv' 
+  VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
 

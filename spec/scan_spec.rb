@@ -21,7 +21,9 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
       @expected_scan_template = 'full-audit-widget-corp'
-      
+      @timeout = '120'
+      @open_timeout = '120'
+
       @mock_scan_id = '12'
       @mock_site_id = '1'
 
@@ -63,6 +65,8 @@ describe 'nexpose-runner' do
         'site_name' => @expected_site_name,
         'ip_addresses' => @expected_ips,
         'scan_template' => @expected_scan_template,
+        'timeout' => @timeout,
+        'open_timeout' => @open_timeout
       }
 
     end
@@ -72,7 +76,8 @@ describe 'nexpose-runner' do
                                     .with(@options['connection_url'],
                                           @options['username'], 
                                           @options['password'], 
-                                          @options['port'])
+                                          @options['port']
+                                         )
                                     .and_return(@mock_nexpose_client)
 
         expect(@mock_nexpose_client).to receive(:login)

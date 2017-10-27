@@ -13,8 +13,9 @@ if ARGV.grep(/^--/).empty?
     'site_name' => ARGV[4], 
     'ip_addresses' => ARGV[5], 
     'scan_template' => ARGV[6],
-    'engine' => ARGV[7]
-  })
+    'engine' => ARGV[7],
+    'timeout' => ARGV[8],
+    'open_timeout' => ARGV[9]})
 else
   NexposeRunner::Scan.start(ARGV)
 end
