@@ -158,7 +158,7 @@ describe 'nexpose-runner' do
 
       it 'should add the supplied ip address to the newly created site' do
         @expected_ips.split(',').each { |ip|
-          expect(@mock_nexpose_site).to receive(:add_ip).with(ip)
+          expect(@mock_nexpose_site).to receive(:included_addresses).with(ip)
         }
         NexposeRunner::Scan.start(@options)
       end
@@ -364,7 +364,7 @@ def get_mock_nexpose_site
                           .and_return(@mock_site_id)
 
   @expected_ips.split(',').each { |ip|
-    allow(mock_nexpose_site).to receive(:add_ip).with(ip)
+    allow(mock_nexpose_site).to receive(:included_addresses).with(ip)
   }
 
   allow(mock_nexpose_site).to receive(:save)

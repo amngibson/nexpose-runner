@@ -111,7 +111,7 @@ module NexposeRunner
       puts "Creating a nexpose site named #{run_details.site_name}"
       site = Nexpose::Site.new run_details.site_name, run_details.scan_template
       run_details.ip_addresses.each { |address|
-          site.add_ip address
+          site.included_addresses address
       }
       if run_details.engine
         site.engine = run_details.engine
