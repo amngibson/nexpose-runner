@@ -11,7 +11,7 @@ class CommandLineArgumentParser
     options['site_name'] = ''
     options['ip_addresses'] = ''
     options['scan_template'] = ''
-    options['engine'] = ''
+    options['engine_id'] = ''
 
     opt_parser = OptionParser.new do |opts|
       opts.banner = 'Usage: scan [options]'
@@ -46,12 +46,12 @@ class CommandLineArgumentParser
         options['ip_addresses'] = ips
       end
       
-      opts.on('--scan-template TEMPLATE', 'Nexpose scan template to use') do |template|
-        options['scan_template'] = template
+      opts.on('--scan-template-id TEMPLATE', 'Nexpose scan template to use') do |template|
+        options['scan_template_id'] = template
       end
       
-      opts.on('--engine ENGINE', 'Nexpose scan engine to use') do |engine|
-        options['engine'] = engine
+      opts.on('--engine-id ENGINE', 'Nexpose scan engine to use') do |engine|
+        options['engine_id'] = engine
       end
 
       

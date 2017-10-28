@@ -2,7 +2,7 @@ require 'yaml'
 require 'nexpose-runner/command_line_arg_parser'
 
 class ScanRunDescription
-  attr_accessor :connection_url, :exceptions_list_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template, :engine
+  attr_accessor :connection_url, :exceptions_list_url, :username, :password, :port, :site_name, :ip_addresses, :scan_template_id, :engine_id
   @@port_value = ''
   @@ip_addresses = []
   @@timeout = ''
@@ -23,8 +23,8 @@ class ScanRunDescription
     @@port_value = options['port']
     self.site_name = options['site_name']
     self.ip_addresses = options['ip_addresses']
-    self.scan_template = options['scan_template']
-    self.engine = options['engine']
+    self.scan_template_id = options['scan_template_id']
+    self.engine_id = options['engine_id']
     self.timeout = options['timeout']
     self.open_timeout = options['open_timeout']
   end
@@ -35,7 +35,7 @@ class ScanRunDescription
     raise StandardError, CONSTANTS::REQUIRED_PASSWORD_MESSAGE if password.nil? || password.empty?
     raise StandardError, CONSTANTS::REQUIRED_SITE_NAME_MESSAGE if site_name.nil? || site_name.empty?
     raise StandardError, CONSTANTS::REQUIRED_IP_ADDRESS_MESSAGE if ip_addresses.length == 0
-    raise StandardError, CONSTANTS::REQUIRED_SCAN_TEMPLATE_MESSAGE if scan_template.nil? || scan_template.empty?
+    raise StandardError, CONSTANTS::REQUIRED_SCAN_TEMPLATE_MESSAGE if scan_template_id.nil? || scan_template_id.empty?
 
   end
 

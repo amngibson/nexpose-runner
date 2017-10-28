@@ -20,7 +20,7 @@ describe 'nexpose-runner' do
       @expected_port = '3781'
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
-      @expected_scan_template = 'full-audit-widget-corp'
+      @expected_scan_template_id = 'full-audit-widget-corp'
       @timeout = '120'
       @open_timeout = '120'
 
@@ -64,7 +64,7 @@ describe 'nexpose-runner' do
         'port' => @expected_port,
         'site_name' => @expected_site_name,
         'ip_addresses' => @expected_ips,
-        'scan_template' => @expected_scan_template,
+        'scan_template_id' => @expected_scan_template_id,
         'timeout' => @timeout,
         'open_timeout' => @open_timeout
       }
@@ -128,10 +128,10 @@ describe 'nexpose-runner' do
 
       it 'should throw an error if no scan template is passed' do
         options = @options.clone
-        options['scan_template'] = nil
+        options['scan_template_id'] = nil
         expect { 
           NexposeRunner::Scan.start(options) 
-        }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
+        }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template ID to use')
       end
 
       it 'should use 3780 as default if port is empty string' do
@@ -150,7 +150,7 @@ describe 'nexpose-runner' do
 
       it 'should create a new Nexpose site with the supplied site name and scan template' do
         expect(Nexpose::Site).to receive(:new)
-                                       .with(@options['site_name'], @options['scan_template'])
+                                       .with(@options['site_name'], @options['scan_template_id'])
                                        .and_return(@mock_nexpose_site)
 
         NexposeRunner::Scan.start(@options)

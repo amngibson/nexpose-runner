@@ -30,7 +30,7 @@ This gem allows you to specify the Nexpose Server URL, Exceptions URL (optional)
 
 EXAMPLE:
 
-    $ scan --connection test.com --exceptions_list_url raw.github.com/exceptions.txt --username username1 --password password1 --port 443 --site-name myfirstsite --ip-addresses 192.168.1.10 --scan-template full-audit --Engine 2
+    $ scan --connection test.com --exceptions_list_url raw.github.com/exceptions.txt --username username1 --password password1 --port 443 --site-name myfirstsite --ip-addresses 192.168.1.10 --scan-template full-audit --engine_id 2
     
 It is possible to use a YAML file to drive the configuration of this module.  An example configuration file is provided in config/scan.yml.example.  Simply copy it to config/scan.yml and modify it to work with your environment.
 

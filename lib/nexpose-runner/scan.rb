@@ -96,7 +96,7 @@ module NexposeRunner
 
     def self.start_scan(nsc, site, run_details)
 
-      puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template} scan template"
+      puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template_id} scan template"
       scan = site.scan nsc
 
       begin
@@ -109,12 +109,12 @@ module NexposeRunner
 
     def self.create_site(run_details, nsc)
       puts "Creating a nexpose site named #{run_details.site_name}"
-      site = Nexpose::Site.new run_details.site_name, run_details.scan_template
+      site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
       run_details.ip_addresses.each { |address|
           site.included_addresses address
       }
-      if run_details.engine
-        site.engine = run_details.engine
+      if run_details.engine_id
+        site.engine_id = run_details.engine_id
       end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
