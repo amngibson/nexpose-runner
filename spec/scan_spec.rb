@@ -21,7 +21,7 @@ describe 'nexpose-runner' do
       @expected_site_name = 'my_cool_software_build-28'
       @expected_ips = '10.5.0.15,10.5.0.20,10.5.0.35'
       @expected_scan_template = 'full-audit-widget-corp'
-      
+
       @mock_scan_id = '12'
       @mock_site_id = '1'
 
@@ -29,8 +29,8 @@ describe 'nexpose-runner' do
       @mock_vuln_report = 'ip_address,title,date_published,severity,summary,fix
                             10.5.0.15,Database Open Access,2010-01-01,Severe,Restrict database access,<p><p>Configure the database server to only allow access to trusted systems. For example, the PCI DSS standard requires you to place the database in an internal network zone, segregated from the DMZ </p></p>
                             10.5.0.15.180,MySQL Obsolete Version,2007-07-25,Critical,Upgrade to the latest version of Oracle MySQL,<p>Download and apply the upgrade from: <a href=http://dev.mysql.com/downloads/mysql>http://dev.mysql.com/downloads/mysql</a></p>'.chomp
-      @mock_exceptions = "Database Open Access\nMySQL Obsolete Version"                      
-      
+      @mock_exceptions = "Database Open Access\nMySQL Obsolete Version"
+
       @mock_vuln_detail_report = 'stuff'.chomp
 
       @mock_software_report = 'name,ip_address,host_name,description,description,vendor,name,version
@@ -70,8 +70,8 @@ describe 'nexpose-runner' do
       it 'should create a session with the nexpose server' do
         expect(Nexpose::Connection).to receive(:new)
                                     .with(@options['connection_url'],
-                                          @options['username'], 
-                                          @options['password'], 
+                                          @options['username'],
+                                          @options['password'],
                                           @options['port'])
                                     .and_return(@mock_nexpose_client)
 
@@ -84,56 +84,56 @@ describe 'nexpose-runner' do
       it 'should throw an error if no connection url is passed' do
         options = @options.clone
         options['connection_url'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me the URL/IP address to your Nexpose Server')
       end
 
       it 'should throw an error if no username is passed' do
         options = @options.clone
         options['username'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a username to login to Nexpose with')
       end
 
       it 'should throw an error if no password is passed' do
         options = @options.clone
         options['password'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a password to login to Nexpose with')
       end
 
       it 'should throw an error if no site name is passed' do
         options = @options.clone
         options['site_name'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Nexpose Site Name')
       end
 
       it 'should throw an error if no ip address is passed' do
         options = @options.clone
         options['ip_addresses'] = '';
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me an IP Address to scan')
       end
 
       it 'should throw an error if no scan template is passed' do
         options = @options.clone
         options['scan_template'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template to use')
       end
 
       it 'should use 3780 as default if port is empty string' do
         expect(Nexpose::Connection).to receive(:new)
-                                       .with(@options['connection_url'], 
-                                             @options['username'], 
-                                             @options['password'], 
+                                       .with(@options['connection_url'],
+                                             @options['username'],
+                                             @options['password'],
                                              '3780')
                                        .and_return(@mock_nexpose_client)
 
@@ -176,37 +176,37 @@ describe 'nexpose-runner' do
       describe 'wait for the Nexpose Scan to complete' do
         it 'should call to check the status of the scan' do
           expect(@mock_nexpose_client).to receive(:scan_statistics).with(@mock_scan_id)
-  
+
           NexposeRunner::Scan.start(@options)
         end
-  
+
         it 'should call to check the status until it is not running' do
           expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::RUNNING)
                                       .exactly(3).times
                                       .ordered
-  
+
           expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::FINISHED)
                                       .once
                                       .ordered
-  
+
           NexposeRunner::Scan.start(@options)
         end
-  
+
         it 'should sleep for 3 seconds if the status is still running' do
           expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::RUNNING)
                                       .exactly(3).times
                                       .ordered
-  
+
           expect(@mock_scan_summary).to receive(:status)
                                       .and_return(Nexpose::Scan::Status::FINISHED)
                                       .once
                                       .ordered
 
           expect(NexposeRunner::Scan).to receive(:sleep).with(3).exactly(4).times
-  
+
           NexposeRunner::Scan.start(@options)
         end
       end
@@ -225,16 +225,16 @@ describe 'nexpose-runner' do
           expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
                                                 .and_return(@mock_report)
-        
+
           expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT, @mock_site_id)
                                                 .and_return(@mock_report)
 
           expect_template_report_to_be_called_with(CONSTANTS::AUDIT_REPORT_FILE_NAME)
           expect_template_report_to_be_called_with(CONSTANTS::XML_REPORT_FILE_NAME)
-          
-          expect { 
-            NexposeRunner::Scan.start(@options) 
+
+          expect {
+            NexposeRunner::Scan.start(@options)
           }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
       end
     end
@@ -242,19 +242,30 @@ describe 'nexpose-runner' do
       it 'should throw exception if vulnerability exists' do
       expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
 
-      expect { 
-        NexposeRunner::Scan.start(@options) 
+      expect {
+        NexposeRunner::Scan.start(@options)
       }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
     end
 
     it 'should not throw exception if exceptions exist for all vulnerabilities' do
       expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
-      
+
       options = @options.clone
       options['exceptions_list_url'] = 'http://google.com'
-      
+
       expect_exceptions_to_be_called_with(options['exceptions_list_url'])
-      
+
+      NexposeRunner::Scan.start(options)
+      end
+
+    it 'should not throw exception if exceptions exist from a file for all vulnerabilities' do
+      expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+
+      options = @options.clone
+      options['exceptions_list_url'] = 'spec/data/test_exclist.txt'
+
+      expect_exceptions_to_be_called_with_file(options['exceptions_list_url'])
+
       NexposeRunner::Scan.start(options)
       end
   end
@@ -268,6 +279,10 @@ def expect_exceptions_to_be_called_with(exceptions_list_url)
   uri = URI(exceptions_list_url)
   expect(Net::HTTP).to receive(:get)
                           .with(uri).and_return(@mock_exceptions)
+end
+
+def expect_exceptions_to_be_called_with_file(exceptions_list_url)
+  expect(File.read(exceptions_list_url)).to eq "Database Open Access\nMySQL Obsolete Version\n"
 end
 
 def expect_report_to_be_called_with(report_name, report_query, report_response)
@@ -306,29 +321,29 @@ def get_mock_nexpose_client
 
   allow(Nexpose::Connection).to receive(:new)
                              .and_return(mock_nexpose_client)
-                             
+
   allow(mock_nexpose_client).to receive(:make_xml)
                              .with(any_args)
                              .and_return(xml)
-                             
+
   allow(mock_nexpose_client).to receive(:make_xml)
                              .with(any_args)
                              .and_return(xml)
-                             
+
   allow(mock_nexpose_client).to receive(:filter)
                             .with(any_args)
-                            .and_return({})                             
-                             
+                            .and_return({})
+
   allow(mock_nexpose_client).to receive(:execute)
                              .with(any_args)
                              .and_return(mock_api_request)
-                             
+
   allow(mock_api_request).to receive(:success)
                              .and_return(false) #this is just to shut up the underlying api.
-                             
+
   allow(mock_api_request).to receive(:attributes)
-                             .and_return(xml)                             
-                             
+                             .and_return(xml)
+
   mock_nexpose_client
 end
 
@@ -340,9 +355,9 @@ def get_mock_scan_summary
   allow(mock_scan_summary).to receive(:tasks).and_return(tasks)
 
   allow(mock_scan_summary).to receive(:status).and_return(
-				Nexpose::Scan::Status::RUNNING, 
 				Nexpose::Scan::Status::RUNNING,
- 				Nexpose::Scan::Status::RUNNING, 
+				Nexpose::Scan::Status::RUNNING,
+ 				Nexpose::Scan::Status::RUNNING,
 				Nexpose::Scan::Status::FINISHED)
   mock_scan_summary
 end
@@ -406,4 +421,3 @@ def get_mock_scan
   allow(mock_scan).to receive(:id).and_return(@mock_scan_id)
   mock_scan
 end
-
