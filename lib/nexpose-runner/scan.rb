@@ -37,8 +37,7 @@ module NexposeRunner
       uri = URI(path)
       if path.include? "http:"
         ex = Net::HTTP.get(uri).split("\n")
-      elsif path.include? "file:"
-        path = path.gsub('file://', '')
+      elsif (File.file?(path))
         ex = File.read(path).split("\n")
       end
       ex
