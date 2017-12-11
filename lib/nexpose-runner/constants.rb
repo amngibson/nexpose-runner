@@ -14,6 +14,7 @@ module CONSTANTS
   VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report.csv'
   SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
   POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
+  MAX_RETRY_COUNT = 5
 
   AUDIT_REPORT_FILE_NAME = 'nexpose-audit-report.html'
   AUDIT_REPORT_NAME = 'audit-report'

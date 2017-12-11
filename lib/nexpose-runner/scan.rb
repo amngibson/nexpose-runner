@@ -103,13 +103,24 @@ module NexposeRunner
 
       puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template_id} scan template"
       scan = site.scan nsc
-
+      retry_count = 0
       begin
         sleep(3)
-        stats = nsc.scan_statistics(scan.id)
-        status = stats.status
+        begin
+          stats = nsc.scan_statistics(scan.id)
+        rescue
+          if retry_count == CONSTANTS::MAX_RETRY_COUNT
+            raise
+          end
+            puts "Status Check failed, incrementing retry count to #{retry_count}"
+            retry_count = retry_count + 1
+            next
+        end
+ 	    status = stats.status
         puts "Current #{run_details.site_name} scan status: #{status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
+        retry_count = 0
       end while status == Nexpose::Scan::Status::RUNNING
+
     end
 
     def self.create_site(run_details, nsc)
