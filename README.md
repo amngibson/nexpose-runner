@@ -6,7 +6,7 @@ This gem will make a nexpose server connection, create a new site, initiate a sc
 
 Basically this gem allows you to attach Nexpose to your Continuous Delivery/Continuous Integration pipeline. Though it can be used for other purposes.
 
-At the end of the scan it will generate 3 csv reports and save them in the directory where the script was executed from. It will also raise an exception if a vulnerbaility is detected. This is used to break the Continuous Delivery/Continuous integration build.
+At the end of the scan it will generate 3 csv reports and save them in the directory where the script was executed from. It will also raise an exception if a vulnerability is detected. This is used to break the Continuous Delivery/Continuous integration build. You may add an exception list URL to prevent breaking the build.
 
 ## Installation
 
@@ -24,15 +24,14 @@ Or install it yourself as:
 
 ## Usage
 
-This gem allows you to specify the Nexpose Server URL, Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, Scan Template, and Engine Number (optional).
+This gem allows you to specify the Nexpose Server URL, Exceptions URL (optional), Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, Scan Template, and Engine Number (optional).
 
+*NOTE:* If you use the "exceptions_list_url" parameter, please ensure you have proper authentication in place.
 
-    $ scan "connection_url" "username" "password" "port" "site_name" "ip_address" "scan_template" "engine_number"
-    
 EXAMPLE:
 
-    $ scan "http://test.connection" "rapid7" "password" "3780" "my_cool_software_build-28" "10.5.0.15" "full-audit-widget-corp"
-
+    $ scan --connection test.com --exceptions_list_url raw.github.com/exceptions.txt --username username1 --password password1 --port 443 --site-name myfirstsite --ip-addresses 192.168.1.10 --scan-template full-audit --engine_id 2
+    
 It is possible to use a YAML file to drive the configuration of this module.  An example configuration file is provided in config/scan.yml.example.  Simply copy it to config/scan.yml and modify it to work with your environment.
 
 ## Contributing

@@ -1,11 +1,48 @@
-require 'nexpose'
+require 'net/http'
 require 'csv'
+require 'nexpose'
+require 'open-uri'
+require 'json'
 require 'nexpose-runner/constants'
 require 'nexpose-runner/scan_run_description'
 
-
 module NexposeRunner
   module Scan
+
+    def self.allow_vulnerabilities?(vulnerabilities, run_details)
+      vuln_array = []
+      exceptions_array = get_exceptions(run_details)
+      titles = vulnerabilities.map{ |v| v[1] }[1..-1]
+      for vuln in titles
+        if !exceptions_array.include?(vuln)
+        puts "#{vuln} not found in Exceptions list"
+        vuln_array << [vuln]
+        end
+      end
+
+      if vuln_array.count > 0
+        File.open('No_Exceptions_Found.txt', 'w+') do |f|
+          vuln_array.each { |element| f.puts(element) }
+          return false
+        end
+
+      else
+        puts "All exceptions passed!"
+        return true
+      end
+    end
+
+    def self.get_exceptions(run_details)
+      path = "#{run_details.exceptions_list_url}"
+      uri = URI(path)
+      if path.include? "http:"
+        ex = Net::HTTP.get(uri).split("\n")
+      elsif (File.file?(path))
+        ex = File.read(path).split("\n")
+      end
+      ex
+    end
+
     def Scan.start(options)
 
       run_details = ScanRunDescription.new(options)
@@ -19,13 +56,17 @@ module NexposeRunner
 
       reports = generate_reports(nsc, site, run_details)
 
-      verify_run(reports[0])
+      verify_run(reports[0], run_details)
     end
 
     def self.generate_reports(nsc, site, run_details)
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
-      vulnerbilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
-      generate_csv(vulnerbilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+      vulnerabilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
+      generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+
+      puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
+      vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
+      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
 
       puts "Scan complete for #{run_details.site_name}, Generating Software Report"
       software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
@@ -41,18 +82,26 @@ module NexposeRunner
       puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
       generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
 
-      [vulnerbilities, software, policies]
+      [vulnerabilities, software, policies]
     end
 
-    def self.verify_run(vulnerabilities)
+    def self.verify_run(vulnerabilities, run_details)
 
-      raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE if vulnerabilities.count > 0
+      if run_details.exceptions_list_url.to_s.empty? and vulnerabilities.count > 0
+        raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE
 
+      elsif vulnerabilities.count == 0
+          puts "No vulnerabilities found!"
+          return true
+
+      elsif allow_vulnerabilities?(vulnerabilities, run_details) == false
+        raise StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE
+      end
     end
 
     def self.start_scan(nsc, site, run_details)
 
-      puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template} scan template"
+      puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template_id} scan template"
       scan = site.scan nsc
       retry_count = 0
       begin
@@ -76,22 +125,23 @@ module NexposeRunner
 
     def self.create_site(run_details, nsc)
       puts "Creating a nexpose site named #{run_details.site_name}"
-      site = Nexpose::Site.new run_details.site_name, run_details.scan_template
+      site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
       run_details.ip_addresses.each { |address|
-          site.add_ip address
+          site.include_asset address
       }
-      if run_details.engine
-        site.engine = run_details.engine
+      if run_details.engine_id
+        site.engine_id = run_details.engine_id
       end
       site.save nsc
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
+
       site
     end
 
     def self.get_new_nexpose_connection(run_details)
       nsc = Nexpose::Connection.new run_details.connection_url, run_details.username, run_details.password, run_details.port
       nsc.login
-      puts 'Successfully logged into the Nexpose Server'
+      puts 'Successfully logged into the Nexpose Server!'
       nsc
     end
 
