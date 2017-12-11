@@ -1,4 +1,4 @@
 module NexposeRunner
-    VERSION = '0.0.19b'
+    VERSION = '1.0.0'
 end
 
