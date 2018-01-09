@@ -190,6 +190,34 @@ describe 'nexpose-runner' do
         NexposeRunner::Scan.start(@options)
       end
 
+      it 'should not cleanup assets unless requested', :focus => true  do
+        expect(@mock_nexpose_client).not_to receive(:find_device_by_address)
+        expect(@mock_nexpose_client).not_to receive(:delete_device)
+
+        NexposeRunner::Scan.start(@options)
+      end
+
+      it 'should clean up assets when scan is complete', :focus => true do
+        @mock_nexpose_client = get_mock_existing_site_nexpose_client
+        @existing_site_id = '456'
+        @mock_existing_site = get_mock_existing_nexpose_site
+        @options["site_name"] = "existing_site_1"
+        @options["cleanup"] = true
+
+        expect(Nexpose::Site).to receive(:load)
+          .with(@mock_nexpose_client, @existing_site_id)
+                                       .and_return(@mock_existing_site)
+
+        @expected_ips.split(',').each_with_index { |ip, i|
+        expect(@mock_nexpose_client).to receive(:find_device_by_address).with(ip, @existing_site_id)
+          .and_return(get_mock_device_for(ip, @mock_site_id))
+        expect(@mock_nexpose_client).to receive(:delete_device).with(i)
+          .and_return(true)
+        }
+
+        NexposeRunner::Scan.start(@options)
+      end
+
       describe 'wait for the Nexpose Scan to complete' do
         it 'should call to check the status of the scan' do
           expect(@mock_nexpose_client).to receive(:scan_statistics).with(@mock_scan_id)
@@ -364,6 +392,8 @@ def get_mock_existing_site_nexpose_client
   allow(mock_api_request).to receive(:attributes)
                              .and_return(xml)
 
+  allow(mock_nexpose_client).to receive(:delete_device).with(any_args).and_return(true)
+
   mock_nexpose_client
 end
 def get_mock_nexpose_client
@@ -515,4 +545,22 @@ def get_mock_scan
   mock_scan = double(Nexpose::Scan)
   allow(mock_scan).to receive(:id).and_return(@mock_scan_id)
   mock_scan
+end
+
+def get_mock_device_for(ip, site_id)
+  mock_device = double(Nexpose::Device)
+  if site_id != @mock_site_id
+    return nil
+  end
+
+  device_id = nil
+  @options['ip_addresses'].split(',').each_with_index do |target, i|
+    if target == ip
+      device_id = i
+      break
+    end
+  end
+  allow(mock_device).to receive(:id).and_return(device_id)
+
+  return mock_device
 end

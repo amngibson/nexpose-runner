@@ -12,6 +12,7 @@ class CommandLineArgumentParser
     options['ip_addresses'] = ''
     options['scan_template'] = ''
     options['engine_id'] = ''
+    options['cleanup'] = false
 
     opt_parser = OptionParser.new do |opts|
       opts.banner = 'Usage: scan [options]'
@@ -54,6 +55,9 @@ class CommandLineArgumentParser
         options['engine_id'] = engine
       end
 
+      opts.on('--cleanup', 'Enables the deletion of assets created during the scan') do |cleanup|
+        options['cleanup'] = cleanup
+      end
       
       
     end
