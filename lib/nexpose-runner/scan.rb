@@ -124,8 +124,18 @@ module NexposeRunner
     end
 
     def self.create_site(run_details, nsc)
-      puts "Creating a nexpose site named #{run_details.site_name}"
-      site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
+      existing_sites = nsc.sites
+      for existing_site in existing_sites
+        if run_details.site_name == existing_site.name
+          puts "Using existing site #{existing_site.name}"
+          site = Nexpose::Site.load(nsc, existing_site.id)
+          break
+        end
+      end
+      if site.nil?
+        puts "Creating a nexpose site named #{run_details.site_name}"
+        site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
+      end
       run_details.ip_addresses.each { |address|
           site.include_asset address
       }
