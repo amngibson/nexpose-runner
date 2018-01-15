@@ -160,8 +160,10 @@ module NexposeRunner
       puts "Found site: #{site}"
       run_details.ip_addresses.each do |ip|
         device = nsc.find_device_by_address ip, site.id
-        puts "Found device: #{device}"
-        nsc.delete_device device.id
+        if ! device.nil?
+          puts "Found device: #{device}"
+          nsc.delete_device device.id
+        end
       end
     end
 
