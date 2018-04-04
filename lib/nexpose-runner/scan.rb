@@ -56,6 +56,10 @@ module NexposeRunner
 
       reports = generate_reports(nsc, site, run_details)
 
+      if run_details.cleanup
+        cleanup_assets(run_details, nsc)
+      end
+
       verify_run(reports[0], run_details)
     end
 
@@ -124,8 +128,18 @@ module NexposeRunner
     end
 
     def self.create_site(run_details, nsc)
-      puts "Creating a nexpose site named #{run_details.site_name}"
-      site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
+      existing_sites = nsc.sites
+      for existing_site in existing_sites
+        if run_details.site_name == existing_site.name
+          puts "Using existing site #{existing_site.name}"
+          site = Nexpose::Site.load(nsc, existing_site.id)
+          break
+        end
+      end
+      if site.nil?
+        puts "Creating a nexpose site named #{run_details.site_name}"
+        site = Nexpose::Site.new run_details.site_name, run_details.scan_template_id
+      end
       run_details.ip_addresses.each { |address|
           site.include_asset address
       }
@@ -136,6 +150,21 @@ module NexposeRunner
       puts "Created site #{run_details.site_name} successfully with the following host(s) #{run_details.ip_addresses.join(', ')}"
 
       site
+    end
+
+    def self.cleanup_assets(run_details, nsc)
+      puts "Cleaning up assets from this scan"
+      site = nsc.sites.select do |s|
+        s.name == run_details.site_name
+      end.first
+      puts "Found site: #{site}"
+      run_details.ip_addresses.each do |ip|
+        device = nsc.find_device_by_address ip, site.id
+        if ! device.nil?
+          puts "Found device: #{device}"
+          nsc.delete_device device.id
+        end
+      end
     end
 
     def self.get_new_nexpose_connection(run_details)

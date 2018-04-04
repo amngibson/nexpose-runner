@@ -7,6 +7,7 @@ class ScanRunDescription
   @@ip_addresses = []
   @@timeout = ''
   @@open_timeout =''
+  @@cleanup = false
   exceptions_list_url_value = ''
 
   def initialize(options)
@@ -27,6 +28,7 @@ class ScanRunDescription
     self.engine_id = options['engine_id']
     self.timeout = options['timeout']
     self.open_timeout = options['open_timeout']
+    self.cleanup = options['cleanup']
   end
 
   def verify
@@ -77,6 +79,14 @@ class ScanRunDescription
 
   def ip_addresses
     @@ip_addresses
+  end
+
+  def cleanup=(value)
+    @@cleanup = value
+  end
+
+  def cleanup
+    @@cleanup
   end
 
   def get_value(value_to_check, default)

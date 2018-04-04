@@ -148,11 +148,23 @@ describe 'nexpose-runner' do
         NexposeRunner::Scan.start(run_options)
       end
 
-      it 'should create a new Nexpose site with the supplied site name and scan template' do
+      it 'should create a new Nexpose site with the supplied site name and scan template, when site does not already exist' do
         expect(Nexpose::Site).to receive(:new)
                                        .with(@options['site_name'], @options['scan_template_id'])
                                        .and_return(@mock_nexpose_site)
+        NexposeRunner::Scan.start(@options)
+      end
 
+      it 'should use an existing site, if available' do
+        @mock_nexpose_client = get_mock_existing_site_nexpose_client
+        @existing_site_id = '456'
+        @mock_existing_site = get_mock_existing_nexpose_site
+        @options["site_name"] = "existing_site_1"
+
+        expect(Nexpose::Site).to receive(:load)
+          .with(@mock_nexpose_client, @existing_site_id)
+                                       .and_return(@mock_existing_site)
+        # change options to request existing site
         NexposeRunner::Scan.start(@options)
       end
 
@@ -174,6 +186,34 @@ describe 'nexpose-runner' do
         expect(@mock_nexpose_site).to receive(:scan)
                                       .with(@mock_nexpose_client)
                                       .and_return(@mock_scan)
+
+        NexposeRunner::Scan.start(@options)
+      end
+
+      it 'should not cleanup assets unless requested', :focus => true  do
+        expect(@mock_nexpose_client).not_to receive(:find_device_by_address)
+        expect(@mock_nexpose_client).not_to receive(:delete_device)
+
+        NexposeRunner::Scan.start(@options)
+      end
+
+      it 'should clean up assets when scan is complete', :focus => true do
+        @mock_nexpose_client = get_mock_existing_site_nexpose_client
+        @existing_site_id = '456'
+        @mock_existing_site = get_mock_existing_nexpose_site
+        @options["site_name"] = "existing_site_1"
+        @options["cleanup"] = true
+
+        expect(Nexpose::Site).to receive(:load)
+          .with(@mock_nexpose_client, @existing_site_id)
+                                       .and_return(@mock_existing_site)
+
+        @expected_ips.split(',').each_with_index { |ip, i|
+        expect(@mock_nexpose_client).to receive(:find_device_by_address).with(ip, @existing_site_id)
+          .and_return(get_mock_device_for(ip, @mock_site_id))
+        expect(@mock_nexpose_client).to receive(:delete_device).with(i)
+          .and_return(true)
+        }
 
         NexposeRunner::Scan.start(@options)
       end
@@ -310,6 +350,52 @@ def expect_template_report_to_be_called_with(report_file_name)
   expect(File).to receive(:open).with(report_file_name, 'w').ordered
 end
 
+def get_mock_existing_site_nexpose_client
+  mock_nexpose_client = double(Nexpose::Connection)
+  xml = REXML::Element.new('test')
+  mock_api_request = double(Nexpose::APIRequest)
+
+  allow(mock_nexpose_client).to receive(:call).with(any_args).and_return({})
+
+  allow(mock_nexpose_client).to receive(:scan_statistics)
+                                 .with(@mock_scan_id)
+				 .and_return(@mock_scan_summary)
+
+  allow(mock_nexpose_client).to receive(:login)
+                                  .and_return(true)
+
+  allow(mock_nexpose_client).to receive(:sites)
+    .and_return([Nexpose::SiteSummary.new('456', 'existing_site_1')])
+
+  allow(Nexpose::Connection).to receive(:new)
+                             .and_return(mock_nexpose_client)
+
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+
+  allow(mock_nexpose_client).to receive(:make_xml)
+                             .with(any_args)
+                             .and_return(xml)
+
+  allow(mock_nexpose_client).to receive(:filter)
+                            .with(any_args)
+                            .and_return({})
+
+  allow(mock_nexpose_client).to receive(:execute)
+                             .with(any_args)
+                             .and_return(mock_api_request)
+
+  allow(mock_api_request).to receive(:success)
+                             .and_return(false) #this is just to shut up the underlying api.
+
+  allow(mock_api_request).to receive(:attributes)
+                             .and_return(xml)
+
+  allow(mock_nexpose_client).to receive(:delete_device).with(any_args).and_return(true)
+
+  mock_nexpose_client
+end
 def get_mock_nexpose_client
   mock_nexpose_client = double(Nexpose::Connection)
   xml = REXML::Element.new('test')
@@ -323,6 +409,9 @@ def get_mock_nexpose_client
 
   allow(mock_nexpose_client).to receive(:login)
                                   .and_return(true)
+
+  allow(mock_nexpose_client).to receive(:sites)
+                                  .and_return([])
 
   allow(Nexpose::Connection).to receive(:new)
                              .and_return(mock_nexpose_client)
@@ -395,6 +484,37 @@ def get_mock_nexpose_site
   mock_nexpose_site
 end
 
+def get_mock_existing_nexpose_site
+  mock_nexpose_site = double(Nexpose::Site)
+
+  allow(mock_nexpose_site).to receive(:call).with(any_args).and_return({})
+
+  allow(mock_nexpose_site).to receive(:scan)
+                          .and_return(@mock_scan)
+
+  allow(mock_nexpose_site).to receive(:id)
+                          .and_return('456')
+
+  allow(mock_nexpose_site).to receive(:name)
+                          .and_return('existing_site_name')
+
+  @expected_ips.split(',').each { |ip|
+    allow(mock_nexpose_site).to receive(:include_asset).with(ip)
+  }
+
+  allow(mock_nexpose_site).to receive(:save)
+                                .with(@mock_nexpose_client)
+
+  allow(mock_nexpose_site).to receive(:scan)
+                                .with(@mock_nexpose_client)
+                                .and_return(@mock_scan)
+
+  allow(Nexpose::Site).to receive(:new)
+                                .and_return(mock_nexpose_site)
+
+  mock_nexpose_site
+end
+
 def get_mock_report
   mock_report = double(Nexpose::AdhocReportConfig)
 
@@ -425,4 +545,22 @@ def get_mock_scan
   mock_scan = double(Nexpose::Scan)
   allow(mock_scan).to receive(:id).and_return(@mock_scan_id)
   mock_scan
+end
+
+def get_mock_device_for(ip, site_id)
+  mock_device = double(Nexpose::Device)
+  if site_id != @mock_site_id
+    return nil
+  end
+
+  device_id = nil
+  @options['ip_addresses'].split(',').each_with_index do |target, i|
+    if target == ip
+      device_id = i
+      break
+    end
+  end
+  allow(mock_device).to receive(:id).and_return(device_id)
+
+  return mock_device
 end
