@@ -24,13 +24,13 @@ Or install it yourself as:
 
 ## Usage
 
-This gem allows you to specify the Nexpose Server URL, Exceptions URL (optional), Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, Scan Template, and Engine Number (optional).
+This gem allows you to specify the Nexpose Server URL, Exceptions URL (optional), Nexpose Username, Nexpose Password, Nexpose Server Port (optional, defaults to 3780), Site Name, Target IP Address, Scan Template, Engine Number (optional) and Cleanup (optional). The 'Cleanup' option will delete the current site you are scanning once all scans have successfully been completed.
 
 *NOTE:* If you use the "exceptions_list_url" parameter, please ensure you have proper authentication in place.
 
 EXAMPLE:
 
-    $ scan --connection test.com --exceptions_list_url raw.github.com/exceptions.txt --username username1 --password password1 --port 443 --site-name myfirstsite --ip-addresses 192.168.1.10 --scan-template full-audit --engine_id 2 [--cleanup]
+    $ scan --connection test.com [--exceptions_list_url raw.github.com/exceptions.txt] --username username1 --password password1 [--port 443] --site-name myfirstsite --ip-addresses 192.168.1.10 --scan-template full-audit [--engine_id 2] [--cleanup]
 
 It is possible to use a YAML file to drive the configuration of this module.  An example configuration file is provided in config/scan.yml.example.  Simply copy it to config/scan.yml and modify it to work with your environment.
 
