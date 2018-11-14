@@ -106,24 +106,39 @@ module NexposeRunner
     def self.start_scan(nsc, site, run_details)
 
       puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template_id} scan template"
-      scan = site.scan nsc
+      begin
+        scan_id = site.scan(nsc).id
+      rescue EOFError
+        i = 0
+        begin
+          if i == CONSTANTS::MAX_RETRY_COUNT
+            raise StandardError, "Failed to start the scan (status is #{scan.status}). Please re-try"
+          end
+          i += 1
+          puts "Received EOF starting scan, checking to see if it kicked off anyway (attempt #{i})"
+          sleep(3)
+          scan = nsc.site_scan_history(site.id).last
+          scan_id = scan.scan_id
+        end while scan.status !=  Nexpose::Scan::Status::RUNNING && scan.status != Nexpose::Scan::Status::DISPATCHED
+        puts "Found a newly activated scan, attaching to it"
+      end
+
       retry_count = 0
       begin
         sleep(3)
         begin
-          stats = nsc.scan_statistics(scan.id)
+          stats = nsc.scan_statistics(scan_id)
         rescue
           if retry_count == CONSTANTS::MAX_RETRY_COUNT
             raise
           end
-            puts "Status Check failed, incrementing retry count to #{retry_count}"
-            retry_count = retry_count + 1
-            next
+          retry_count = retry_count + 1
+          puts "Status Check failed, incrementing retry count to #{retry_count}"
+          next
         end
- 	    status = stats.status
-        puts "Current #{run_details.site_name} scan status: #{status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
+        puts "Current #{run_details.site_name} scan status: #{stats.status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
         retry_count = 0
-      end while status == Nexpose::Scan::Status::RUNNING
+      end while stats.status == Nexpose::Scan::Status::RUNNING
 
     end
 
