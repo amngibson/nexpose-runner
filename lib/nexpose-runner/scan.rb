@@ -66,19 +66,23 @@ module NexposeRunner
     def self.generate_reports(nsc, site, run_details)
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
       vulnerabilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
-      generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+      generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME + ".csv")
+      generate_html(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
       vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
-      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
+      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".csv")
+      generate_html(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Software Report"
-      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
-      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME)
+      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".csv")
+      generate_html(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Policy Report"
-      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc)
-      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
+      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc, CONSTANTS::POLICY_REPORT_ORDER_BY)
+      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME + ".csv")
+      generate_html(policies, CONSTANTS::POLICY_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
       generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
@@ -189,11 +193,14 @@ module NexposeRunner
       nsc
     end
 
-    def self.generate_report(sql, site, nsc)
+    def self.generate_report(sql, site, nsc, order_by = "")
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
-      report.add_filter('query', sql)
-      report.add_filter('site', site)
+      sql = "#{sql} WHERE site_id = #{site}"
+      if order_by != ""
+        sql = "#{sql} #{order_by}"
+      end
+      report.add_filter('query', "#{sql}")
       report_output = report.generate(nsc)
       CSV.parse(report_output.chomp, {:headers => :first_row})
     end
@@ -219,6 +226,24 @@ module NexposeRunner
             puts '--------------------------------------'
           end
         end
+      end
+    end
+    def self.generate_html(csv_output, name)
+      File.open(name, 'w') do |html_file|
+        html_file.write('<html><body><table>')
+        html_file.write('<tr>')
+        csv_output.headers.each do |column|
+          html_file.write("<td>#{column}</td>")
+        end
+        html_file.write('</tr>')
+        csv_output.each do |row|
+          html_file.write('<tr>')
+          row.each do |column|
+            html_file.write("<td>#{column[1]}</td>")
+          end
+          html_file.write('</tr>')
+        end
+        html_file.write('</table></body></html>')
       end
     end
   end
