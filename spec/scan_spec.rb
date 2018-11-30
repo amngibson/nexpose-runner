@@ -250,7 +250,7 @@ describe 'nexpose-runner' do
                                       .once
                                       .ordered
 
-          expect(NexposeRunner::Scan).to receive(:sleep).with(3).exactly(4).times
+          expect(NexposeRunner::Scan).to receive(:sleep).with(3).exactly(2).times
 
           NexposeRunner::Scan.start(@options)
         end
@@ -264,8 +264,8 @@ describe 'nexpose-runner' do
 
           expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
           expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME, CONSTANTS::VULNERABILITY_DETAIL_REPORT_QUERY, @mock_vuln_detail_report)
-          expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report)
-          expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report)
+          expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+          expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report, CONSTANTS::POLICY_REPORT_ORDER_BY)
 
           expect(Nexpose::AdhocReportConfig).to receive(:new)
                                                 .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
@@ -330,19 +330,20 @@ def expect_exceptions_to_be_called_with_file(exceptions_list_url)
   expect(File.read(exceptions_list_url)).to eq "Database Open Access\nMySQL Obsolete Version\n"
 end
 
-def expect_report_to_be_called_with(report_name, report_query, report_response)
+def expect_report_to_be_called_with(report_name, report_query, report_response, order_by = "")
   expect(@mock_report).to receive(:add_filter)
                           .with('version', '1.3.0')
 
+  query = "#{report_query} WHERE site_id = #{@mock_site_id}"
+  if order_by != ""
+    query = "#{query} #{order_by}"
+  end
   expect(@mock_report).to receive(:add_filter)
-                          .with('query', report_query).ordered
-
-  expect(@mock_report).to receive(:add_filter)
-                          .with('site', @mock_site_id)
+                          .with('query', query).ordered
 
   expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).and_return(report_response).ordered
 
-  expect(CSV).to receive(:open).with(report_name, 'w').ordered
+  expect(CSV).to receive(:open).with(report_name + ".csv", 'w').ordered
 end
 
 def expect_template_report_to_be_called_with(report_file_name)
