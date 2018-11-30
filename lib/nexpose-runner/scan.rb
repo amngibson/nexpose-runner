@@ -230,10 +230,10 @@ module NexposeRunner
     end
     def self.generate_html(csv_output, name)
       File.open(name, 'w') do |html_file|
-        html_file.write('<html><body><table>')
+        html_file.write("<html><header><title>#{name}</title><style> table { font-family: arial, sans-serif; border-collapse: collapse; width: 100%; } th { background-color: #000; color: #FFF; } td { border: 1px solid #666666; text-align: left; padding: 8px; } tr:nth-child(odd) { background-color: #dddddd; } </style></header><body><h1>#{name}</name><table>")
         html_file.write('<tr>')
         csv_output.headers.each do |column|
-          html_file.write("<td>#{column}</td>")
+          html_file.write("<th>#{column}</th>")
         end
         html_file.write('</tr>')
         csv_output.each do |row|
