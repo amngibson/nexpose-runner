@@ -10,10 +10,10 @@ module CONSTANTS
   DEFAULT_PORT = '3780'
   DEFAULT_TIMEOUT = '120'
   DEFAULT_OPEN_TIMEOUT = '120'
-  VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report.csv'
-  VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report.csv'
-  SOFTWARE_REPORT_NAME = 'nexpose-software-report.csv'
-  POLICY_REPORT_NAME = 'nexpose-policy-report.csv'
+  VULNERABILITY_REPORT_NAME = 'nexpose-vulnerability-report'
+  VULNERABILITY_DETAIL_REPORT_NAME = 'nexpose-vulnerability-detail-report'
+  SOFTWARE_REPORT_NAME = 'nexpose-software-report'
+  POLICY_REPORT_NAME = 'nexpose-policy-report'
   MAX_RETRY_COUNT = 5
 
   AUDIT_REPORT_FILE_NAME = 'nexpose-audit-report.html'
@@ -33,6 +33,7 @@ module CONSTANTS
                                   fix
                                 FROM fact_asset_scan_vulnerability_finding
                                 JOIN dim_asset USING (asset_id)
+                                JOIN dim_site_asset USING (asset_id)
                                 JOIN dim_vulnerability USING (vulnerability_id)
                                 JOIN dim_vulnerability_solution USING (vulnerability_id)
                                 JOIN dim_solution_highest_supercedence USING (solution_id)
@@ -47,6 +48,7 @@ module CONSTANTS
                                           ds.fix
                                         FROM fact_asset_scan_vulnerability_instance fasvi
                                         JOIN dim_asset da USING (asset_id)
+                                        JOIN dim_site_asset USING (asset_id)
                                         JOIN dim_vulnerability dv USING (vulnerability_id)
                                         JOIN dim_vulnerability_solution dvs USING (vulnerability_id)
                                         JOIN dim_solution ds USING (solution_id)'
@@ -66,8 +68,9 @@ module CONSTANTS
                            JOIN dim_asset_software das USING (asset_id)
                            JOIN dim_software ds USING (software_id)
                            JOIN dim_site_asset dsa USING (asset_id)
-                           JOIN dim_site dsi USING (site_id)
-                           ORDER BY
+                           JOIN dim_site dsi USING (site_id)'
+
+  SOFTWARE_REPORT_ORDER_BY = 'ORDER BY
                             da.ip_address,
                             ds.vendor,
                             ds.name'
@@ -86,5 +89,7 @@ module CONSTANTS
                          LEFT JOIN dim_policy dp on dp.policy_id = fapr.policy_id
                          LEFT JOIN dim_policy_rule dpr on dpr.policy_id = fapr.policy_id and fapr.rule_id = dpr.rule_id
                          LEFT JOIN dim_asset da on da.asset_id = fapr.asset_id
-                         ORDER BY da.ip_address'
+                         LEFT JOIN dim_site_asset ON dim_site_asset.asset_id = fapr.asset_id'
+
+  POLICY_REPORT_ORDER_BY = 'ORDER BY da.ip_address'
 end

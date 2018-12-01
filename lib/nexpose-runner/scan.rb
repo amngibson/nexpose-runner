@@ -66,19 +66,23 @@ module NexposeRunner
     def self.generate_reports(nsc, site, run_details)
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Report"
       vulnerabilities = generate_report(CONSTANTS::VULNERABILITY_REPORT_QUERY, site.id, nsc)
-      generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME)
+      generate_csv(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME + ".csv")
+      generate_html(vulnerabilities, CONSTANTS::VULNERABILITY_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Vulnerability Detail Report"
       vuln_details = generate_report(CONSTANTS:: VULNERABILITY_DETAIL_REPORT_QUERY, site.id, nsc)
-      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME)
+      generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".csv")
+      generate_html(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Software Report"
-      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc)
-      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME)
+      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".csv")
+      generate_html(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Policy Report"
-      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc)
-      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME)
+      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc, CONSTANTS::POLICY_REPORT_ORDER_BY)
+      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME + ".csv")
+      generate_html(policies, CONSTANTS::POLICY_REPORT_NAME + ".html")
 
       puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
       generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
@@ -106,24 +110,39 @@ module NexposeRunner
     def self.start_scan(nsc, site, run_details)
 
       puts "Starting scan for #{run_details.site_name} using the #{run_details.scan_template_id} scan template"
-      scan = site.scan nsc
+      begin
+        scan_id = site.scan(nsc).id
+      rescue EOFError
+        i = 0
+        begin
+          if i == CONSTANTS::MAX_RETRY_COUNT
+            raise StandardError, "Failed to start the scan (status is #{scan.status}). Please re-try"
+          end
+          i += 1
+          puts "Received EOF starting scan, checking to see if it kicked off anyway (attempt #{i})"
+          sleep(3)
+          scan = nsc.site_scan_history(site.id).last
+          scan_id = scan.scan_id
+        end while scan.status !=  Nexpose::Scan::Status::RUNNING && scan.status != Nexpose::Scan::Status::DISPATCHED
+        puts "Found a newly activated scan, attaching to it"
+      end
+
       retry_count = 0
       begin
         sleep(3)
         begin
-          stats = nsc.scan_statistics(scan.id)
+          stats = nsc.scan_statistics(scan_id)
         rescue
           if retry_count == CONSTANTS::MAX_RETRY_COUNT
             raise
           end
-            puts "Status Check failed, incrementing retry count to #{retry_count}"
-            retry_count = retry_count + 1
-            next
+          retry_count = retry_count + 1
+          puts "Status Check failed, incrementing retry count to #{retry_count}"
+          next
         end
- 	    status = stats.status
-        puts "Current #{run_details.site_name} scan status: #{status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
+        puts "Current #{run_details.site_name} scan status: #{stats.status.to_s} -- PENDING: #{stats.tasks.pending.to_s} ACTIVE: #{stats.tasks.active.to_s} COMPLETED #{stats.tasks.completed.to_s}"
         retry_count = 0
-      end while status == Nexpose::Scan::Status::RUNNING
+      end while stats.status == Nexpose::Scan::Status::RUNNING
 
     end
 
@@ -174,11 +193,14 @@ module NexposeRunner
       nsc
     end
 
-    def self.generate_report(sql, site, nsc)
+    def self.generate_report(sql, site, nsc, order_by = "")
       report = Nexpose::AdhocReportConfig.new(nil, 'sql')
       report.add_filter('version', '1.3.0')
-      report.add_filter('query', sql)
-      report.add_filter('site', site)
+      sql = "#{sql} WHERE site_id = #{site}"
+      if order_by != ""
+        sql = "#{sql} #{order_by}"
+      end
+      report.add_filter('query', "#{sql}")
       report_output = report.generate(nsc)
       CSV.parse(report_output.chomp, {:headers => :first_row})
     end
@@ -204,6 +226,24 @@ module NexposeRunner
             puts '--------------------------------------'
           end
         end
+      end
+    end
+    def self.generate_html(csv_output, name)
+      File.open(name, 'w') do |html_file|
+        html_file.write("<html><header><title>#{name}</title><style> table { font-family: arial, sans-serif; border-collapse: collapse; width: 100%; } th { background-color: #000; color: #FFF; } td { border: 1px solid #666666; text-align: left; padding: 8px; } tr:nth-child(odd) { background-color: #dddddd; } </style></header><body><h1>#{name}</name><table>")
+        html_file.write('<tr>')
+        csv_output.headers.each do |column|
+          html_file.write("<th>#{column}</th>")
+        end
+        html_file.write('</tr>')
+        csv_output.each do |row|
+          html_file.write('<tr>')
+          row.each do |column|
+            html_file.write("<td>#{column[1]}</td>")
+          end
+          html_file.write('</tr>')
+        end
+        html_file.write('</table></body></html>')
       end
     end
   end
