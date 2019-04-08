@@ -74,21 +74,29 @@ module NexposeRunner
       generate_csv(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".csv")
       generate_html(vuln_details, CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME + ".html")
 
-      puts "Scan complete for #{run_details.site_name}, Generating Software Report"
-      software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
-      generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".csv")
-      generate_html(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".html")
+      if run_details.gen_software_report
+        puts "Scan complete for #{run_details.site_name}, Generating Software Report"
+        software = generate_report(CONSTANTS::SOFTWARE_REPORT_QUERY, site.id, nsc, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+        generate_csv(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".csv")
+        generate_html(software, CONSTANTS::SOFTWARE_REPORT_NAME + ".html")
+      end
 
-      puts "Scan complete for #{run_details.site_name}, Generating Policy Report"
-      policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc, CONSTANTS::POLICY_REPORT_ORDER_BY)
-      generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME + ".csv")
-      generate_html(policies, CONSTANTS::POLICY_REPORT_NAME + ".html")
+      if run_details.gen_policy_report
+        puts "Scan complete for #{run_details.site_name}, Generating Policy Report"
+        policies = generate_report(CONSTANTS::POLICY_REPORT_QUERY, site.id, nsc, CONSTANTS::POLICY_REPORT_ORDER_BY)
+        generate_csv(policies, CONSTANTS::POLICY_REPORT_NAME + ".csv")
+        generate_html(policies, CONSTANTS::POLICY_REPORT_NAME + ".html")
+      end
 
-      puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
-      generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
+      if run_details.gen_audit_report
+        puts "Scan complete for #{run_details.site_name}, Generating Audit Report"
+        generate_template_report(nsc, site.id, CONSTANTS::AUDIT_REPORT_FILE_NAME, CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT)
+      end
 
-      puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
-      generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
+      if run_details.gen_xml_report
+        puts "Scan complete for #{run_details.site_name}, Generating Xml Report"
+        generate_template_report(nsc, site.id, CONSTANTS::XML_REPORT_FILE_NAME, CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT)
+      end
 
       [vulnerabilities, software, policies]
     end

@@ -29,6 +29,10 @@ class ScanRunDescription
     self.timeout = options['timeout']
     self.open_timeout = options['open_timeout']
     self.cleanup = options['cleanup']
+    self.gen_policy_report = options['gen-policy-report']
+    self.gen_software_report = options['gen-software-report']
+    self.gen_audit_report = options['gen-audit-report']
+    self.gen_xml_report = options['gen-xml-report']
   end
 
   def verify
@@ -87,6 +91,31 @@ class ScanRunDescription
 
   def cleanup
     @@cleanup
+  end
+
+  def gen_policy_report
+    @@gen_policy_report
+  end
+  def gen_software_report
+    @@gen_software_report
+  end
+  def gen_xml_report
+    @@gen_xml_report
+  end
+  def gen_audit_report
+    @@gen_audit_report
+  end
+  def gen_policy_report=(value)
+    @@gen_policy_report = value
+  end
+  def gen_software_report=(value)
+    @@gen_software_report = value
+  end
+  def gen_xml_report=(value)
+    @@gen_xml_report = value
+  end
+  def gen_audit_report=(value)
+    @@gen_audit_report = value
   end
 
   def get_value(value_to_check, default)
