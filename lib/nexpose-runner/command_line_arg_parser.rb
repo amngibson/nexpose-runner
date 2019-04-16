@@ -13,6 +13,10 @@ class CommandLineArgumentParser
     options['scan_template'] = ''
     options['engine_id'] = ''
     options['cleanup'] = false
+    options['gen-software-report'] = true
+    options['gen-policy-report'] = true
+    options['gen-xml-report'] = true
+    options['gen-audit-report'] = true
 
     opt_parser = OptionParser.new do |opts|
       opts.banner = 'Usage: scan [options]'
@@ -55,11 +59,22 @@ class CommandLineArgumentParser
         options['engine_id'] = engine
       end
 
+      opts.on('--[no-]gen-policy-report', 'Enable/Disable the Policy report') do |gen_report|
+        options['gen-policy-report'] = gen_report
+      end
+      opts.on('--[no-]gen-software-report', 'Enable/Disable the Software report') do |gen_report|
+        options['gen-software-report'] = gen_report
+      end
+      opts.on('--[no-]gen-audit-report', 'Enable/Disable the Audit report') do |gen_report|
+        options['gen-audit-report'] = gen_report
+      end
+      opts.on('--[no-]gen-xml-report', 'Enable/Disable the XML report') do |gen_report|
+        options['gen-xml-report'] = gen_report
+      end
+
       opts.on('--cleanup', 'Enables the deletion of assets created during the scan') do |cleanup|
         options['cleanup'] = cleanup
       end
-      
-      
     end
 
     opt_parser.parse!(args)

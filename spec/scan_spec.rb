@@ -66,7 +66,11 @@ describe 'nexpose-runner' do
         'ip_addresses' => @expected_ips,
         'scan_template_id' => @expected_scan_template_id,
         'timeout' => @timeout,
-        'open_timeout' => @open_timeout
+        'open_timeout' => @open_timeout,
+        'gen-policy-report' => true,
+        'gen-software-report' => true,
+        'gen-xml-report' => true,
+        'gen-audit-report' => true,
       }
 
     end
@@ -74,8 +78,8 @@ describe 'nexpose-runner' do
       it 'should create a session with the nexpose server' do
         expect(Nexpose::Connection).to receive(:new)
                                     .with(@options['connection_url'],
-                                          @options['username'], 
-                                          @options['password'], 
+                                          @options['username'],
+                                          @options['password'],
                                           @options['port']
                                          )
                                     .and_return(@mock_nexpose_client)
@@ -129,8 +133,8 @@ describe 'nexpose-runner' do
       it 'should throw an error if no scan template is passed' do
         options = @options.clone
         options['scan_template_id'] = nil
-        expect { 
-          NexposeRunner::Scan.start(options) 
+        expect {
+          NexposeRunner::Scan.start(options)
         }.to raise_error(StandardError, 'OOPS! Looks like you forgot to give me a Scan Template ID to use')
       end
 
@@ -256,33 +260,62 @@ describe 'nexpose-runner' do
         end
       end
 
-      describe 'it should create reports' do
-      it 'should generate, download, and parse an adhoc reports for Vulnerability, Software, and Policies' do
-          expect(Nexpose::AdhocReportConfig).to receive(:new)
-                                                .with(nil, 'sql')
-                                                .and_return(@mock_report)
+      describe 'reporting' do
+        it 'should generate, download, and parse an adhoc reports for Vulnerability, Software, and Policies' do
+            expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                  .with(nil, 'sql')
+                                                  .and_return(@mock_report)
 
-          expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
-          expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME, CONSTANTS::VULNERABILITY_DETAIL_REPORT_QUERY, @mock_vuln_detail_report)
-          expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
-          expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report, CONSTANTS::POLICY_REPORT_ORDER_BY)
+            expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+            expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME, CONSTANTS::VULNERABILITY_DETAIL_REPORT_QUERY, @mock_vuln_detail_report)
+            expect_report_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+            expect_report_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report, CONSTANTS::POLICY_REPORT_ORDER_BY)
 
-          expect(Nexpose::AdhocReportConfig).to receive(:new)
-                                                .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
-                                                .and_return(@mock_report)
+            expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                  .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
+                                                  .and_return(@mock_report)
 
-          expect(Nexpose::AdhocReportConfig).to receive(:new)
-                                                .with(CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT, @mock_site_id)
-                                                .and_return(@mock_report)
+            expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                  .with(CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT, @mock_site_id)
+                                                  .and_return(@mock_report)
 
-          expect_template_report_to_be_called_with(CONSTANTS::AUDIT_REPORT_FILE_NAME)
-          expect_template_report_to_be_called_with(CONSTANTS::XML_REPORT_FILE_NAME)
+            expect_template_report_to_be_called_with(CONSTANTS::AUDIT_REPORT_FILE_NAME)
+            expect_template_report_to_be_called_with(CONSTANTS::XML_REPORT_FILE_NAME)
 
-          expect {
-            NexposeRunner::Scan.start(@options)
-          }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
+            expect {
+              NexposeRunner::Scan.start(@options)
+            }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
+        end
+        it 'does not create reports for software/policy/xml/audit if told not to' do
+            run_options = @options.clone
+            run_options['gen-policy-report'] = false
+            run_options['gen-software-report'] = false
+            run_options['gen-xml-report'] = false
+            run_options['gen-audit-report'] = false
+
+            expect(Nexpose::AdhocReportConfig).to receive(:new)
+                                                  .with(nil, 'sql')
+                                                  .and_return(@mock_report)
+
+            expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
+            expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_DETAIL_REPORT_NAME, CONSTANTS::VULNERABILITY_DETAIL_REPORT_QUERY, @mock_vuln_detail_report)
+            expect_report_not_to_be_called_with(CONSTANTS::SOFTWARE_REPORT_NAME, CONSTANTS::SOFTWARE_REPORT_QUERY, @mock_software_report, CONSTANTS::SOFTWARE_REPORT_ORDER_BY)
+            expect_report_not_to_be_called_with(CONSTANTS::POLICY_REPORT_NAME, CONSTANTS::POLICY_REPORT_QUERY, @mock_policy_report, CONSTANTS::POLICY_REPORT_ORDER_BY)
+
+            expect(Nexpose::AdhocReportConfig).not_to receive(:new)
+                                                  .with(CONSTANTS::AUDIT_REPORT_NAME, CONSTANTS::AUDIT_REPORT_FORMAT, @mock_site_id)
+
+            expect(Nexpose::AdhocReportConfig).not_to receive(:new)
+                                                  .with(CONSTANTS::XML_REPORT_NAME, CONSTANTS::XML_REPORT_FORMAT, @mock_site_id)
+
+            expect_template_report_not_to_be_called_with(CONSTANTS::AUDIT_REPORT_FILE_NAME)
+            expect_template_report_not_to_be_called_with(CONSTANTS::XML_REPORT_FILE_NAME)
+
+            expect {
+              NexposeRunner::Scan.start(run_options)
+            }.to raise_error(StandardError, CONSTANTS::VULNERABILITY_FOUND_MESSAGE)
+        end
       end
-    end
 
       it 'should throw exception if vulnerability exists' do
       expect_report_to_be_called_with(CONSTANTS::VULNERABILITY_REPORT_NAME, CONSTANTS::VULNERABILITY_REPORT_QUERY, @mock_vuln_report)
@@ -345,10 +378,29 @@ def expect_report_to_be_called_with(report_name, report_query, report_response, 
 
   expect(CSV).to receive(:open).with(report_name + ".csv", 'w').ordered
 end
+def expect_report_not_to_be_called_with(report_name, report_query, report_response, order_by = "")
+  expect(@mock_report).not_to receive(:add_filter)
+                          .with('version', '1.3.0')
+
+  query = "#{report_query} WHERE site_id = #{@mock_site_id}"
+  if order_by != ""
+    query = "#{query} #{order_by}"
+  end
+  expect(@mock_report).not_to receive(:add_filter)
+                          .with('query', query).ordered
+
+  expect(@mock_report).not_to receive(:generate).with(@mock_nexpose_client)
+
+  expect(CSV).not_to receive(:open).with(report_name + ".csv", 'w').ordered
+end
 
 def expect_template_report_to_be_called_with(report_file_name)
   expect(@mock_report).to receive(:generate).with(@mock_nexpose_client).ordered
   expect(File).to receive(:open).with(report_file_name, 'w').ordered
+end
+def expect_template_report_not_to_be_called_with(report_file_name)
+  expect(@mock_report).not_to receive(:generate).with(@mock_nexpose_client).ordered
+  expect(File).not_to receive(:open).with(report_file_name, 'w').ordered
 end
 
 def get_mock_existing_site_nexpose_client
